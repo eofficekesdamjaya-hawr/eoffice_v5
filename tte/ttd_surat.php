@@ -3,194 +3,220 @@ require_once "../config/session.php";
 require_once "../config/koneksi.php";
 date_default_timezone_set('Asia/Jakarta');
 
-/* ======================================================
-   1. VALIDASI LOGIN & MULTI-JABATAN (Pimpinan & Admin)
-====================================================== */
-if (!isset($_SESSION['status']) || $_SESSION['status'] !== "login") {
-    // Arahkan kembali jika belum login
-    header("Location: ../auth/login_pimpinan.php?pesan=belum_login");
-    exit;
+// 1. Validasi Parameter ID dari URL
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+if ($id <= 0) {
+    echo "<script>alert('ID Surat tidak valid!'); window.location.href='../transaksi/kelola_surat_keluar.php';</script>";
+    exit();
 }
 
-// Ambil email dari session (Gunakan email karena user tersebar di 2 tempat login)
-$tipe_akses = strtolower($_SESSION['tipe_akses'] ?? ''); 
+// 2. Proteksi Hak Akses Berdasarkan Role Session
+$user_role = strtolower($_SESSION['tipe_akses'] ?? ''); 
+$akses_diizinkan = ['superadmin', 'kakesdam_jaya', 'wakakesdam_jaya'];
 
-// Daftar email yang diizinkan melakukan TTD
-$akses_diizinkan = [
-    'superadmin',
-    'admin',
-    'kakesdam_jaya',
-    'wakakedam_jaya',
-    'spri_pimpinan',
-];
+if (!in_array($user_role, $akses_diizinkan)) {
+    echo "<script>alert('Anda tidak memiliki otoritas (Akses Ditolak) untuk menandatangani surat ini!'); window.location.href='../transaksi/kelola_surat_keluar.php';</script>";
+    exit();
+}
 
-if (!in_array($tipe_akses, $akses_diizinkan)) {
-    echo "<script>alert('Akses Ditolak! Hanya Kakesdam, Wakakesdam, dan Kasi TUUD yang berwenang.'); window.location.href='../transaksi/kelola_surat_masuk.php';</script>";
-    exit;
+// 3. Ambil Data Surat Keluar dari Database
+$querySurat = "SELECT file_surat, status_proses FROM surat_keluar WHERE id_surat = ?";
+$stmtSurat  = $conn->prepare($querySurat);
+$stmtSurat->bind_param("i", $id);
+$stmtSurat->execute();
+$resultSurat = $stmtSurat->get_result()->fetch_assoc();
+$stmtSurat->close();
+
+if (!$resultSurat) {
+    echo "<script>alert('Data berkas draf surat keluar tidak ditemukan!'); window.location.href='../transaksi/kelola_surat_keluar.php';</script>";
+    exit();
+}
+
+// 4. Sinkronisasi Status dan Lokasi File PDF
+$status_proses = trim(strtolower($resultSurat['status_proses'] ?? ''));
+$is_ttd        = ($status_proses === 'selesai') ? true : false;
+
+$nama_file     = $resultSurat['file_surat'] ?? '';
+$file_found    = false;
+$pdf_preview   = '';
+
+if (!empty($nama_file)) {
+    // Jalur penyimpanan draf PDF di sistem Anda
+    $path_file = "../uploads/surat_keluar/" . $nama_file;
+    if (file_exists($path_file)) {
+        $file_found  = true;
+        $pdf_preview = $path_file;
+    }
 }
 ?>
 
-<style>
-body {
-    background: #eef2f7;
-}
-.main-card {
-    border: none;
-    border-radius: 18px;
-    overflow: hidden;
-}
-.card-header-custom {
-    background: linear-gradient(135deg, #198754, #146c43);
-    color: #fff;
-}
-.meta-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    font-weight: 700;
-    opacity: .8;
-}
-.meta-value {
-    font-size: 14px;
-    font-weight: 600;
-}
-#signature-pad {
-    width: 100%;
-    height: 220px;
-    border: 2px dashed #ced4da;
-    border-radius: 14px;
-    background: #fff;
-    touch-action: none;
-}
-.btn {
-    border-radius: 10px;
-}
-.signature-status {
-    border-radius: 14px;
-}
-.loading-spinner {
-    display: none;
-}
-.info-list li {
-    margin-bottom: 10px;
-}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Tanda Tangan Digital - Kesdam Jaya</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+    body {
+        background: #eef2f7;
+    }
+    .main-card {
+        border: none;
+        border-radius: 18px;
+        overflow: hidden;
+    }
+    .card-header-custom {
+        background: linear-gradient(135deg, #198754, #146c43);
+        color: #fff;
+    }
+    .meta-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        font-weight: 700;
+        opacity: .8;
+    }
+    .meta-value {
+        font-size: 14px;
+        font-weight: 600;
+    }
+    #signature-pad {
+        width: 100%;
+        height: 220px;
+        border: 2px dashed #ced4da;
+        border-radius: 14px;
+        background: #fff;
+        touch-action: none;
+    }
+    .btn {
+        border-radius: 10px;
+    }
+    .signature-status {
+        border-radius: 14px;
+    }
+    .loading-spinner {
+        display: none;
+    }
+    .info-list li {
+        margin-bottom: 10px;
+    }
 
-/* ======================================================
-   CSS STRATEGI FIXED: SINKRONISASI KANVAS DENGAN AREA DRAG
-====================================================== */
-.document-container-wrapper {
-    position: relative;
-    background: #6c757d;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    overflow-x: auto;
-}
-/* Mengubah container agar lebarnya presisi mengikuti ukuran canvas asli PDF */
-.pdf-render-canvas-container {
-    position: relative;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    background: #ffffff;
-    line-height: 0;
-    display: inline-block; /* Kunci ukuran pembungkus sesuai kertas */
-}
-#pdf-render-canvas {
-    max-width: 100%;
-    height: auto;
-    display: block;
-}
+    /* CSS FIXED: SINKRONISASI KANVAS DENGAN AREA DRAG */
+    .document-container-wrapper {
+        position: relative;
+        background: #6c757d;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        overflow-x: auto;
+    }
+    .pdf-render-canvas-container {
+        position: relative;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        background: #ffffff;
+        line-height: 0;
+        display: inline-block;
+    }
+    #pdf-render-canvas {
+        max-width: 100%;
+        height: auto;
+        display: block;
+    }
 
-/* KOTAK DRAGGABLE TANDA TANGAN */
-.drag-component {
-    position: absolute;
-    cursor: move;
-    z-index: 100;
-    user-select: none;
-    box-sizing: border-box;
-}
-#drag-ttd {
-    border: 2px dashed #0d6efd;
-    background: rgba(13, 110, 253, 0.15);
-    width: 150px;
-    height: 60px;
-    display: none;
-}
-#drag-ttd::after {
-    content: "Penempatan TTD";
-    position: absolute;
-    top: -22px;
-    left: 0;
-    background: #0d6efd;
-    color: #fff;
-    font-size: 10px;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 4px;
-    white-space: nowrap;
-}
-#ttd-preview-canvas {
-    width: 100%;
-    height: 100%;
-    opacity: 0.85;
-    pointer-events: none;
-}
+    /* KOTAK DRAGGABLE TANDA TANGAN */
+    .drag-component {
+        position: absolute;
+        cursor: move;
+        z-index: 100;
+        user-select: none;
+        box-sizing: border-box;
+    }
+    #drag-ttd {
+        border: 2px dashed #0d6efd;
+        background: rgba(13, 110, 253, 0.15);
+        width: 150px;
+        height: 60px;
+        display: none;
+    }
+    #drag-ttd::after {
+        content: "Penempatan TTD";
+        position: absolute;
+        top: -22px;
+        left: 0;
+        background: #0d6efd;
+        color: #fff;
+        font-size: 10px;
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
+    }
+    #ttd-preview-canvas {
+        width: 100%;
+        height: 100%;
+        opacity: 0.85;
+        pointer-events: none;
+    }
 
-/* KOTAK DRAGGABLE STEMPEL */
-#drag-stempel {
-    border: 2px dashed #dc3545;
-    background: rgba(220, 53, 69, 0.15);
-    width: 140px;
-    height: 70px;
-    display: none;
-}
-#drag-stempel::after {
-    content: "Stempel Kakesdam";
-    position: absolute;
-    top: -22px;
-    left: 0;
-    background: #dc3545;
-    color: #fff;
-    font-size: 10px;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 4px;
-    white-space: nowrap;
-}
-#stempel-preview-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    opacity: 0.85;
-    pointer-events: none;
-}
+    /* KOTAK DRAGGABLE STEMPEL */
+    #drag-stempel {
+        border: 2px dashed #dc3545;
+        background: rgba(220, 53, 69, 0.15);
+        width: 140px;
+        height: 70px;
+        display: none;
+    }
+    #drag-stempel::after {
+        content: "Stempel Kakesdam";
+        position: absolute;
+        top: -22px;
+        left: 0;
+        background: #dc3545;
+        color: #fff;
+        font-size: 10px;
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
+    }
+    #stempel-preview-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        opacity: 0.85;
+        pointer-events: none;
+    }
 
-/* KOTAK DRAGGABLE QR CODE */
-#drag-qr {
-    border: 2px dashed #495057;
-    background: rgba(73, 80, 87, 0.15);
-    width: 75px;
-    height: 75px;
-    display: none;
-}
-#drag-qr::after {
-    content: "QR Code";
-    position: absolute;
-    top: -22px;
-    left: 0;
-    background: #495057;
-    color: #fff;
-    font-size: 10px;
-    font-weight: bold;
-    padding: 2px 6px;
-    border-radius: 4px;
-    white-space: nowrap;
-}
-#qr-preview-img {
-    width: 100%;
-    height: 100%;
-    opacity: 0.85;
-    pointer-events: none;
-}
-</style>
+    /* KOTAK DRAGGABLE QR CODE */
+    #drag-qr {
+        border: 2px dashed #495057;
+        background: rgba(73, 80, 87, 0.15);
+        width: 75px;
+        height: 75px;
+        display: none;
+    }
+    #drag-qr::after {
+        content: "QR Code";
+        position: absolute;
+        top: -22px;
+        left: 0;
+        background: #495057;
+        color: #fff;
+        font-size: 10px;
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 4px;
+        white-space: nowrap;
+    }
+    #qr-preview-img {
+        width: 100%;
+        height: 100%;
+        opacity: 0.85;
+        pointer-events: none;
+    }
+    </style>
+</head>
+<body>
 
 <div class="main-content p-4">
 <div class="container-fluid">
@@ -199,11 +225,11 @@ body {
     <div>
         <h4 class="fw-bold mb-1">
             <i class="bi bi-vector-pen text-success me-2"></i>
-            Tanda Tangan Surat Digital (Kakesdam Jaya)
+            Tanda Tangan Surat Digital (Otoritas Kakesdam)
         </h4>
-        <small class="text-muted">Mode Fleksibel: Geser komponen ke posisi yang diinginkan</small>
+        <small class="text-muted">Mode Surat Keluar: Geser komponen ke posisi penandatanganan dokumen resmi</small>
     </div>
-    <a href="kelola_surat_masuk.php" class="btn btn-secondary shadow-sm">
+    <a href="../transaksi/kelola_surat_keluar.php" class="btn btn-secondary shadow-sm">
         <i class="bi bi-arrow-left"></i> Kembali
     </a>
 </div>
@@ -218,7 +244,6 @@ body {
             <div class="card-body p-0">
                 <?php if($file_found): ?>
                     <div class="document-container-wrapper">
-                        <!-- Perubahan posisi id="pdf-container" ditaruh di child langsung -->
                         <div class="pdf-render-canvas-container" id="pdf-container">
                             <canvas id="pdf-render-canvas"></canvas>
 
@@ -237,6 +262,7 @@ body {
                     <div class="d-flex flex-column justify-content-center align-items-center text-center p-5" style="height:60vh;">
                         <i class="bi bi-file-earmark-x text-danger" style="font-size:90px;"></i>
                         <h4 class="fw-bold text-danger mt-4">File PDF Tidak Ditemukan</h4>
+                        <small class="text-muted">Pastikan draf dokumen fisik sudah diupload di folder uploads/surat_keluar/</small>
                     </div>
                 <?php endif; ?>
             </div>
@@ -260,7 +286,7 @@ body {
                             <i class="bi bi-check-circle-fill fs-3 me-2"></i>
                             <div>
                                 <div class="fw-bold">Dokumen Sudah Ditandatangani</div>
-                                <small>Tanda tangan resmi Kakesdam telah diterapkan di dokumen.</small>
+                                <small>Tanda tangan resmi Kakesdam telah diterapkan di dokumen surat keluar ini.</small>
                             </div>
                         </div>
                     </div>
@@ -268,13 +294,14 @@ body {
                         <a href="<?= htmlspecialchars($pdf_preview) ?>" target="_blank" class="btn btn-success">
                             <i class="bi bi-eye-fill me-1"></i> Lihat Hasil PDF
                         </a>
-                        <a href="hapus_ttd_aksi.php?id=<?= $id ?>" class="btn btn-outline-danger" onclick="return confirm('Hapus tanda tangan ini dan ulangi?')">
+                        <a href="hapus_ttd_aksi.php?id=<?= $id ?>&jenis=keluar" class="btn btn-outline-danger" onclick="return confirm('Hapus tanda tangan ini dan ulangi?')">
                             <i class="bi bi-arrow-repeat me-1"></i> Tanda Tangan Ulang
                         </a>
                     </div>
                 <?php else: ?>
                     <form method="POST" action="proses_ttd_surat_pdf.php" id="formTTD">
                         <input type="hidden" name="id_surat" value="<?= $id ?>">
+                        <input type="hidden" name="jenis_tabel" value="keluar">
                         <input type="hidden" name="signature_data" id="signature_data">
 
                         <input type="hidden" name="pos_x_ttd" id="pos_x_ttd">
@@ -291,7 +318,15 @@ body {
                             <canvas id="signature-pad"></canvas>
                         </div>
 
-                        <div class="card border-success shadow-sm"> <div class="card-header bg-success text-white py-2"> <i class="bi bi-pen-fill me-1"></i> TTD Asli Kakesdam Jaya (Preview) </div> <div class="card-body text-center"> <img src="../assets/ttd_kakesdam_asli.png" alt="TTD Asli Kakesdam" style=" max-width:100%; height:90px; object-fit:contain; "> <div class="mt-2"> <button type="button" class="btn btn-outline-success btn-sm" disabled> Gunakan TTD Asli </button> </div> <small class="text-muted d-block mt-2"> Preview tanda tangan resmi Kakesdam. Fitur aktivasi akan ditambahkan pada tahap berikutnya. </small> </div> </div>
+                        <div class="card border-success shadow-sm mb-3"> 
+                            <div class="card-header bg-success text-white py-2"> 
+                                <i class="bi bi-pen-fill me-1"></i> TTD Asli Kakesdam Jaya (Preview) 
+                            </div> 
+                            <div class="card-body text-center"> 
+                                <img src="../assets/ttd_kakesdam_asli.png" alt="TTD Asli Kakesdam" style="max-width:100%; height:90px; object-fit:contain;"> 
+                                <small class="text-muted d-block mt-2">Preview tanda tangan resmi Komando.</small> 
+                            </div> 
+                        </div>
 
                         <div class="d-grid gap-2 mb-3">
                             <button type="button" class="btn btn-outline-danger btn-sm" id="clear-signature">
@@ -379,7 +414,6 @@ if (canvasPad) {
             document.getElementById('btnSubmit').disabled = false;
 
             const container = document.getElementById('pdf-container');
-            // Menempatkan inisiasi posisi relatif terhadap lebar real canvas halaman PDF
             initPosition('drag-ttd', container.clientWidth / 2 - 40, container.clientHeight - 180);
             initPosition('drag-stempel', container.clientWidth / 2 - 120, container.clientHeight - 200);
             initPosition('drag-qr', container.clientWidth / 2 - 140, container.clientHeight - 160);
@@ -387,9 +421,7 @@ if (canvasPad) {
     });
 }
 
-/* ======================================================
-    RENDER ENGINE PDF.JS UNTUK AREA INTERAKTIF DRAG
-====================================================== */
+/* RENDER ENGINE PDF.JS UNTUK AREA INTERAKTIF DRAG */
 const pdfUrl = <?= json_encode($pdf_preview) ?>;
 
 if (pdfUrl && pdfUrl.trim() !== '') {
@@ -412,7 +444,6 @@ if (pdfUrl && pdfUrl.trim() !== '') {
         renderCanvas.style.width = viewport.width + 'px';
         renderCanvas.style.height = viewport.height + 'px';
 
-        // Menyelaraskan pembungkus container agar identik dengan ukuran kertas PDF
         const container = document.getElementById('pdf-container');
         container.style.width = viewport.width + 'px';
         container.style.height = viewport.height + 'px';
@@ -438,9 +469,7 @@ if (pdfUrl && pdfUrl.trim() !== '') {
     });
 }
 
-/* ======================================================
-    CORE ENGINE: LOGIKA DRAG & DROP KOMPONEN
-====================================================== */
+/* CORE ENGINE: LOGIKA DRAG & DROP KOMPONEN */
 function initPosition(elementId, x, y) {
     const el = document.getElementById(elementId);
     el.style.left = x + 'px';
@@ -518,9 +547,7 @@ makeElementDraggable('drag-ttd');
 makeElementDraggable('drag-stempel');
 makeElementDraggable('drag-qr');
 
-/* ======================================================
-    SUBMIT INTERCEPTOR FORM
-====================================================== */
+/* SUBMIT INTERCEPTOR FORM */
 document.getElementById('formTTD').addEventListener('submit', function(e) {
     document.getElementById('signature_data').value = signaturePad.toDataURL('image/png');
     const btn = document.getElementById('btnSubmit');
@@ -529,5 +556,5 @@ document.getElementById('formTTD').addEventListener('submit', function(e) {
     btn.querySelector('.loading-spinner').style.display = 'inline-flex';
 });
 </script>
-
-<?php include "../layout/footer.php"; ?>
+</body>
+</html>
