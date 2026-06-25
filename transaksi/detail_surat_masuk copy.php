@@ -15,7 +15,7 @@ if (empty($_SESSION['id_user']) || !in_array($user_role, $allowed_roles)) {
     exit();
 }
 
-// 2. VALIDASI PARAMETER ID SURAT
+// 2. VALIDASI PARAMETER ID SURAT (Sintaks Telah Diperbaiki)
 if (!isset($_GET['id']) || empty(trim($_GET['id']))) {
     echo "<script>alert('ID Surat tidak valid!'); window.location='kelola_surat_masuk.php';</script>";
     exit();
@@ -205,16 +205,12 @@ require_once '../dashboard/sidebar_admin.php';
                     <?php endif; ?>
                 </div>
                 <div class="card-body p-0 bg-dark" style="height: 680px;">
-                    <?php 
-                    $file_path = "../uploads/surat_masuk/" . ($row['file_surat'] ?? '');
-                    if (!empty($row['file_surat']) && file_exists($file_path)): 
-                    ?>
-                        <iframe src="../uploads/surat_masuk/<?= urlencode($row['file_surat']) ?>#toolbar=1" width="100%" height="100%" style="border: none;"></iframe>
+                    <?php if (!empty($row['file_surat']) && file_exists("../uploads/surat_masuk/" . $row['file_surat'])): ?>
+                        <embed src="../uploads/surat_masuk/<?= urlencode($row['file_surat']) ?>#toolbar=1&navpanes=0&scrollbar=1" type="application/pdf" width="100%" height="100%">
                     <?php else: ?>
                         <div class="d-flex flex-column justify-content-center align-items-center text-white h-100 p-4 text-center">
                             <i class="bi bi-file-earmark-pdf text-muted mb-2" style="font-size: 3rem;"></i>
-                            <span class="text-xs text-muted mb-1">Berkas fisik master PDF tidak ditemukan di server.</span>
-                            <small class="text-dark-50 font-monospace text-xs" style="font-size:0.75rem;">Nama Berkas target: <?= htmlspecialchars($row['file_surat'] ?? 'Kosong') ?></small>
+                            <span class="text-xs text-muted">Berkas fisik master PDF tidak ditemukan atau belum diunggah oleh Operator Setum.</span>
                         </div>
                     <?php endif; ?>
                 </div>
