@@ -75,18 +75,19 @@ $namaFileBaru = $infoFile['filename'] . "_ttd.pdf";
 $pathHasil = $folderUpload . $namaFileBaru;
 
 // --------------------------
-// 4. Inisialisasi FPDI Versi Lama (Tanpa Namespace)
+// 4. Inisialisasi FPDI - Jalur SESUAI dengan server Anda
 // --------------------------
-// Gunakan FPDI yang ada di folder libraries/fpdi/
-require_once "../libraries/fpdi/Fpdi.php";
+// Berdasarkan hasil find: ./libraries/fpdf/Fpdi.php ada
+require_once "../libraries/fpdf/Fpdi.php";
 
-// Cek apakah class FPDI tersedia
-if (!class_exists('FPDI')) {
-    echo "<script>alert('Library PDF tidak ditemukan!'); window.history.back();</script>";
+// Cek apakah class tersedia
+if (!class_exists('FPDI') && !class_exists('Fpdi')) {
+    echo "<script>alert('Library FPDI tidak dapat dimuat!');</script>";
     exit;
 }
 
-$pdf = new FPDI();
+// Gunakan class yang tersedia
+$pdf = class_exists('FPDI') ? new FPDI() : new Fpdi();
 
 // Ambil jumlah halaman
 $jumlahHalaman = $pdf->setSourceFile($pathAsli);
