@@ -3,11 +3,7 @@ require_once __DIR__.'/../config/session.php';
 $message = '';
 require_once '../config/koneksi.php';
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-echo "<pre style='background:#f8f9fa; padding:15px; border:1px solid #ccc; color:#000;'>";
-echo "<strong>Isi Lengkap Array Session:</strong><br>";
-print_r($_SESSION);
-echo "</pre>";
-exit;
+
 
 if (!isset($_SESSION['id_user'])) {
     header("Location: ../auth/login.php");
@@ -17,16 +13,8 @@ if (!isset($_SESSION['id_user'])) {
 // 1. Ambil ID dari session
 $id_user = (int)($_SESSION['id_user'] ?? 0);
 
-// 2. AMBIL DATA SATUAN LANGSUNG DARI TABEL 'users'
-// Kita gunakan SELECT satuan karena kolom itu ada di database Anda
-$stmtUser = $conn->prepare("SELECT satuan FROM users WHERE id = ?");
-$stmtUser->bind_param("i", $id_user);
-$stmtUser->execute();
-$dataUser = $stmtUser->get_result()->fetch_assoc();
-
-// 3. Masukkan ke variabel $role_nama
-// Jika data di database kosong, tampilkan default 'Unit Pengirim'
-$role_nama = $dataUser['satuan'] ?? 'Unit Pengirim';
+// Mengambil langsung dari session yang sudah ada
+$role_nama = $_SESSION['nama_user'] ?? 'Unit Pengirim';
 
 
 /* 1. GENERATE NOMOR AGENDA OTOMATIS */
