@@ -4,13 +4,8 @@ require_once "../config/session.php";
 require_once "../config/koneksi.php";
 date_default_timezone_set('Asia/Jakarta');
 
-// Load Library PDF (FPDF & FPDI) - Sesuaikan path jika menggunakan autoload composer atau manual require
-// Contoh jika manual: 
-// require_once('../libraries/fpdf/fpdf.php');
-// require_once('../libraries/fpdi/src/autoload.php');
-if (file_exists("../vendor/autoload.php")) {
-    require_once "../vendor/autoload.php";
-}
+require_once('../libraries/fpdf/fpdf.php');
+require_once('../libraries/fpdi/src/autoload.php'); 
 
 use setasign\Fpdi\Fpdi;
 
