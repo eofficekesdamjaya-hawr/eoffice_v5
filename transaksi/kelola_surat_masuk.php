@@ -236,75 +236,79 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
                     
                     <td class="text-center"><?= renderBadgeAlurMasuk($row['status_proses'] ?? 'Dalam Proses') ?></td>
                     
-                    <td>
-                        <div class="d-flex flex-column gap-1">
-                            
-                            <?php 
-                            // GRUP 1: Pimpinan Utama & Eksekutif Komando
-                            if (in_array($user_email, ['superadmin@gmail.com', 'kakesdamjaya2026@gmail.com', 'wakakesdamjaya2026@gmail.com', 'kasituud2026@gmail.com'])): 
-                            ?>
-                                <button type="button" class="btn btn-warning btn-sm fw-bold shadow-sm text-xs" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
-                                <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold text-xs"><i class="bi bi-shuffle"></i> Disposisi</a>
-                                <a href="hapus_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas Surat Masuk?')"><i class="bi bi-trash"></i> Hapus</a>
-                                
-                                <div class="dropdown">
-                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu Lainnya</button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
-                                        <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
-                                    </ul>
-                                </div>
+<td>
+    <div class="d-flex flex-column gap-1">
+        
+        <?php 
+        // GRUP 1: Pimpinan Utama & Eksekutif Komando
+        if (in_array($user_email, ['superadmin@gmail.com', 'kakesdamjaya2026@gmail.com', 'wakakesdamjaya2026@gmail.com', 'kasituud2026@gmail.com'])): 
+        ?>
+            <button type="button" class="btn btn-warning btn-sm fw-bold shadow-sm text-xs" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
+            <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold text-xs"><i class="bi bi-shuffle"></i> Disposisi</a>
+            <a href="hapus_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas Surat Masuk?')"><i class="bi bi-trash"></i> Hapus</a>
+            
+            <div class="dropdown dropstart d-block w-100 mt-1">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropMenu1_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">Menu Lainnya</button>
+                <ul class="dropdown-menu shadow" aria-labelledby="dropMenu1_<?= $row['id_surat'] ?>">
+                    <li><a class="dropdown-item text-xs py-2" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
+                    <li><a class="dropdown-item text-xs py-2" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
+                </ul>
+            </div>
 
-                            <?php 
-                            // GRUP 2: Kesekretariatan / Staf Admin (Setum & Admin)
-                            elseif (in_array($user_email, ['setum@gmail.com', 'admin@gmail.com'])): 
-                            ?>
-                                <button type="button" class="btn btn-warning btn-sm fw-bold text-xs" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
-                                <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold text-xs"><i class="bi bi-shuffle"></i> Disposisi</a>
-                                
-                                <?php if ($user_email === 'admin@gmail.com'): ?>
-                                    <a href="hapus_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
-                                <?php endif; ?>
+        <?php 
+        // GRUP 2: Kesekretariatan / Staf Admin (Setum & Admin)
+        elseif (in_array($user_email, ['setum@gmail.com', 'admin@gmail.com'])): 
+        ?>
+            <button type="button" class="btn btn-warning btn-sm fw-bold text-xs" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
+            <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold text-xs"><i class="bi bi-shuffle"></i> Disposisi</a>
+            
+            <?php if ($user_email === 'admin@gmail.com'): ?>
+                <a href="hapus_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
+            <?php endif; ?>
 
-                                <div class="dropdown">
-                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu Lainnya</button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
-                                        <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
-                                    </ul>
-                                </div>
+            <div class="dropdown dropstart d-block w-100 mt-1">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropMenu2_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">Menu Lainnya</button>
+                <ul class="dropdown-menu shadow" aria-labelledby="dropMenu2_<?= $row['id_surat'] ?>">
+                    <li><a class="dropdown-item text-xs py-2" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
+                    <li><a class="dropdown-item text-xs py-2" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
+                </ul>
+            </div>
 
-                            <?php 
-                            // GRUP 3: Spri Pimpinan (Akses Terbatas)
-                            elseif ($user_email === 'spripimpinan2026@gmail.com'): 
-                            ?>
-                                <button type="button" class="btn btn-warning btn-sm fw-bold text-xs" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
-                                <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold text-xs"><i class="bi bi-shuffle"></i> Disposisi</a>
-                                
-                                <div class="dropdown">
-                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu Lainnya</button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
-                                        <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
-                                    </ul>
-                                </div>
+        <?php 
+        // GRUP 3: Spri Pimpinan (Akses Terbatas)
+        elseif ($user_email === 'spripimpinan2026@gmail.com'): 
+        ?>
+            <button type="button" class="btn btn-warning btn-sm fw-bold text-xs" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
+            <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold text-xs"><i class="bi bi-shuffle"></i> Disposisi</a>
+            
+            <div class="dropdown dropstart d-block w-100 mt-1">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropMenu3_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">Menu Lainnya</button>
+                <ul class="dropdown-menu shadow" aria-labelledby="dropMenu3_<?= $row['id_surat'] ?>">
+                    <li><a class="dropdown-item text-xs py-2" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
+                    <li><a class="dropdown-item text-xs py-2" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
+                </ul>
+            </div>
 
-                            <?php 
-                            // GRUP 4: Ruangan / Internal Kesdam Map
-                            else: 
-                            ?>
-                                <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm fw-bold text-xs"><i class="bi bi-reply-all-fill"></i> Jawab / Revisi</a>
-                                <div class="dropdown mt-1">
-                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">Lainnya</button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
-                                        <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
-                                    </ul>
-                                </div>
-                            <?php endif; ?>
+        <?php 
+        // GRUP 4: Ruangan / Internal Kesdam Map
+        else: 
+        ?>
+            <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm fw-bold text-xs"><i class="bi bi-reply-all-fill"></i> Jawab / Revisi</a>
+            
+            <div class="dropdown dropstart d-block w-100 mt-1">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropMenu4_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">Lainnya</button>
+                <ul class="dropdown-menu shadow" aria-labelledby="dropMenu4_<?= $row['id_surat'] ?>">
+                    <li><a class="dropdown-item text-xs py-2" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
+                    <li><a class="dropdown-item text-xs py-2" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
+                </ul>
+            </div>
+        <?php endif; ?>
 
-                        </div>
+    </div>
 
+
+
+           
                         <div class="modal fade" id="verifModalMasuk<?= $row['id_surat'] ?>" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered">
                                 <form action="../transifikasi/proses_verifikasi_surat.php" method="POST" class="modal-content">
