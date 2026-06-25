@@ -196,18 +196,18 @@ require_once '../dashboard/sidebar_admin.php';
             </div>
         </div>
 
-        <div class="col-lg-5">
+       <div class="col-lg-5">
     <div class="card shadow-sm border-0 sticky-top" style="top: 20px; z-index: 10;">
         <div class="card-header bg-danger text-white fw-bold py-2 text-xs d-flex justify-content-between align-items-center">
             <span><i class="bi bi-file-pdf-fill me-1"></i> Dokumen Lampiran Digital (PDF)</span>
             <?php if (!empty($row['file_surat'])): ?>
-                <a href="../uploads/surat_masuk/<?= urlencode($row['file_surat']) ?>" target="_blank" class="btn btn-xs btn-light py-0 px-2 fw-bold text-danger text-xs">Buka Tab Baru</a>
+                <a href="../uploads/<?= urlencode($row['file_surat']) ?>" target="_blank" class="btn btn-xs btn-light py-0 px-2 fw-bold text-danger text-xs">Buka Tab Baru</a>
             <?php endif; ?>
         </div>
         <div class="card-body p-0 bg-dark" style="height: 680px;">
             <?php if (!empty($row['file_surat'])): ?>
-                <object data="../uploads/surat_masuk/<?= urlencode($row['file_surat']) ?>#toolbar=1" type="application/pdf" width="100%" height="100%">
-                    <iframe src="../uploads/surat_masuk/<?= urlencode($row['file_surat']) ?>#toolbar=1" width="100%" height="100%" style="border: none;">
+                <object data="../uploads/<?= urlencode($row['file_surat']) ?>#toolbar=1" type="application/pdf" width="100%" height="100%">
+                    <iframe src="../uploads/<?= urlencode($row['file_surat']) ?>#toolbar=1" width="100%" height="100%" style="border: none;">
                         <div class="d-flex flex-column justify-content-center align-items-center text-white h-100 p-4 text-center">
                             <i class="bi bi-exclamation-triangle text-warning mb-2" style="font-size: 2rem;"></i>
                             <span class="text-xs">Browser Anda tidak mendukung pratinjau PDF. Silakan klik "Buka Tab Baru".</span>
