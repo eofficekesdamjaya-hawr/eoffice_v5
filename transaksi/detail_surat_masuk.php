@@ -38,7 +38,7 @@ if ($result->num_rows === 0) {
 $row = $result->fetch_assoc();
 $stmt->close();
 
-// require_once '../dashboard/sidebar_admin.php';
+require_once '../dashboard/sidebar_admin.php';
 ?>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
