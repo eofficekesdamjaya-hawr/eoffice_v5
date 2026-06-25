@@ -1,6 +1,9 @@
 <?php
 require_once "../config/session.php";
 require_once "../config/koneksi.php";
+// Sertakan file auth_config untuk mendapatkan sinkronisasi variabel $role secara otomatis
+require_once "../config/auth_config.php"; 
+
 date_default_timezone_set('Asia/Jakarta');
 
 /* ======================================================
@@ -12,18 +15,16 @@ if (!isset($_SESSION['status']) || $_SESSION['status'] !== "login") {
     exit;
 }
 
-// Ambil email dari session (Gunakan email karena user tersebar di 2 tempat login)
-$email_user = strtolower($_SESSION['email'] ?? ''); 
-
-// Daftar email yang diizinkan melakukan TTD
-$email_diizinkan = [
-    'kakesdamjaya@gmail.com',
-    'wakakesdamjaya@gmail.com',
-    'kasituud@gmail.com'
+// Daftar role/jabatan yang diizinkan melakukan TTD digital
+$role_diizinkan = [
+    'kakesdam_jaya',
+    'wakakesdam_jaya',
+    'kasi_tuud'
 ];
 
-if (!in_array($email_user, $email_diizinkan)) {
-    echo "<script>alert('Akses Ditolak! Hanya Kakesdam, Wakakesdam, dan Kasi TUUD yang berwenang.'); window.location.href='../transaksi/kelola_surat.php';</script>";
+// Validasi apakah role user saat ini ada di dalam daftar yang diizinkan
+if (!in_array($role, $role_diizinkan)) {
+    echo "<script>alert('Akses Ditolak! Hanya Kakesdam, Wakakesdam, dan Kasi TUUD yang berwenang melakukan tanda tangan.'); window.location.href='../transaksi/kelola_surat.php';</script>";
     exit;
 }
 ?>
