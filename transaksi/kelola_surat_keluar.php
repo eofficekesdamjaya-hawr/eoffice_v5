@@ -409,21 +409,42 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
                         </div>
 
                         <div class="modal fade" id="verifModal<?= $row['id_surat'] ?>" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content">
-                                    <div class="modal-header bg-warning text-dark">
-                                        <h5 class="modal-title fw-bold"><i class="bi bi-shield-check"></i> Verifikasi Surat Berkas</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body text-start"> <p>Apakah Anda ingin memverifikasi draf surat dengan nomor agenda <strong><?= htmlspecialchars($row['no_agenda'] ?? '-') ?></strong>?</p>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                                        <a href="../transifikasi/proses_verifikasi_surat.php?id=<?= $row['id_surat'] ?>&status=diterima" class="btn btn-success">Terima & Setujui</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="../transifikasi/proses_verifikasi_surat.php" method="GET">
+                <input type="hidden" name="id" value="<?= $row['id_surat'] ?>">
+                
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-shield-check"></i> Verifikasi Surat Berkas</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body text-start">
+                    <p class="mb-3">Tentukan status verifikasi draf surat dengan nomor agenda <strong><?= htmlspecialchars($row['no_agenda'] ?? '-') ?></strong>:</p>
+                    
+                    <div class="mb-3">
+                        <label for="statusSelect<?= $row['id_surat'] ?>" class="form-label fw-bold text-secondary">Pilih Status Berkas:</label>
+                        <select class="form-select" id="statusSelect<?= $row['id_surat'] ?>" name="status" required>
+                            <option value="" disabled selected>-- Pilih Status --</option>
+                            <option value="diterima">✅ Diterima</option>
+                            <option value="ditolak">❌ Ditolak</option>
+                            <option value="proses disposisi">📝 Proses Disposisi</option>
+                            <option value="sudah didisposisikan">📌 Sudah Didisposisikan</option>
+                            <option value="dalam proses">⚙️ Dalam Proses</option>
+                            <option value="ditindaklanjuti">📤 Ditindaklanjuti/Dijawab</option>
+                            <option value="selesai">📂 Selesai & Diarsipkan</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success fw-bold"><i class="bi bi-check-lg"></i> Simpan Verifikasi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
                     </td>
                 </tr>
             <?php
