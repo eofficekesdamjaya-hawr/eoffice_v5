@@ -4,49 +4,14 @@ require_once "../config/session.php";
 require_once "../config/koneksi.php";
 date_default_timezone_set('Asia/Jakarta');
 
-// 2. LOAD CORE FPDF
-require_once __DIR__ . '/../libraries/fpdf/fpdf.php';
+// 2. Pemanggilan Vendor Autoloader Resmi (Otomatis memuat FPDF & FPDI tanpa error path)
+require_once __DIR__ . '/../vendor/autoload.php';
 
-// 3. FORCE INJECT SELURUH DEPENDENSI FPDI SECARA MANUAL
-// Memanggil komponen utama
-require_once __DIR__ . '/../libraries/fpdi/src/FpdiException.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/PdfParserException.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfTypeException.php';
+use setasign\Fpdi\Fpdi;
 
-// Memanggil Parser Komponen Data Stream (Penyebab Error Sebelumnya)
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/StreamReader.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/CrossReference/CrossReferenceException.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/CrossReference/CrossReference.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/PdfParser.php';
-
-// Memanggil Jenis Objek PDF Dasar
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfType.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfToken.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfNull.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfBoolean.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfNumeric.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfString.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfName.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfArray.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfDictionary.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfStream.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfIndirectObject.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfIndirectObjectReference.php';
-
-// Memanggil Reader Halaman Dokumen
-require_once __DIR__ . '/../libraries/fpdi/src/PdfReader/PdfReaderException.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfReader/PdfReader.php';
-require_once __DIR__ . '/../libraries/fpdi/src/PdfReader/Page.php';
-
-// Memanggil File Trait Global Luar
-require_once __DIR__ . '/../libraries/fpdi/FpdfTplTrait.php';
-require_once __DIR__ . '/../libraries/fpdi/FpdfTpl.php';
-require_once __DIR__ . '/../libraries/fpdi/FpdiTrait.php';
-
-// Kelas eksekusi gabungan FPDF + FPDI Trait resmi
-class FpdiBridge extends FPDF {
-    use \setasign\Fpdi\FpdfTplTrait;
-    use \setasign\Fpdi\FpdiTrait;
+// Kelas eksekusi gabungan FPDF + FPDI
+class FpdiBridge extends Fpdi {
+    // Kosongkan karena semua fungsionalitas otomatis diwarisi dari library vendor terbaru
 }
 // Pastikan hanya diakses melalui pengiriman form POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
