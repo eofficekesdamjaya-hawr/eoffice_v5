@@ -1,5 +1,5 @@
 <?php
-require_once "../config/session.php";
+session_start();
 
 
 header("X-Frame-Options: SAMEORIGIN");
