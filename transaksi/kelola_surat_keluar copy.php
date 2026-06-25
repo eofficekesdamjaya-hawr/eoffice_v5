@@ -349,14 +349,17 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
                                 <a href="../tte/ttd_surat.php?id=<?= $row['id_surat'] ?>&action=tte" class="btn btn-success btn-sm text-xs fw-bold"><i class="bi bi-pen-fill"></i> TTD Surat</a>
                                 <a href="../surat_keluar/hapus_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
                                 
-                                <div class="dropdown custom-dropdown">
-                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle-btn w-100 text-xs" type="button">Menu Lainnya</button>
-                                    <ul class="dropdown-menu-list bg-white border rounded shadow-sm p-2 d-none position-absolute" style="z-index:1090; min-width:160px; list-style:none;">
-                                        <li class="mb-1"><a class="text-decoration-none text-dark d-block p-1 text-xs" href="../surat_keluar/detail_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
-                                        <li class="mb-1"><a class="text-decoration-none text-dark d-block p-1 text-xs" href="../surat_keluar/riwayat_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
-                                        <li><button type="button" class="border-0 bg-transparent text-dark w-100 text-start p-1 text-xs custom-modal-btn" data-target-modal="#editModal<?= $row['id_surat'] ?>"><i class="bi bi-pencil"></i> Edit No/Tgl/Surat</button></li>
-                                    </ul>
-                                </div>
+<div class="dropdown custom-dropdown">
+    <button class="btn btn-outline-secondary btn-sm dropdown-toggle-btn w-100 text-xs" type="button">Menu Lainnya</button>
+    <ul class="dropdown-menu-list bg-white border rounded shadow-sm p-2 d-none position-absolute" style="z-index:1090; min-width:160px; list-style:none;">
+        <li class="mb-1"><a class="text-decoration-none text-dark d-block p-1 text-xs" href="detail_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
+        <li class="mb-1"><a class="text-decoration-none text-dark d-block p-1 text-xs" href="riwayat_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
+        
+        <?php if (in_array($user_email, ['superadmin@gmail.com', 'setum@gmail.com', 'admin@gmail.com'])): ?>
+            <li><button type="button" class="border-0 bg-transparent text-dark w-100 text-start p-1 text-xs custom-modal-btn" data-target-modal="#modalEditNoTgl<?= $row['id_surat'] ?>"><i class="bi bi-pencil-square text-warning"></i> Edit No/Tgl Surat</button></li>
+        <?php endif; ?>
+    </ul>
+</div>
 
                             <?php // GRUP 2: Staf Sekretariat / Pengelola Berkas (Setum & Admin)
                             elseif (in_array($user_role, ['setum', 'admin'])): ?>
@@ -432,6 +435,46 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
                                 </div>
                             </div>
                         </div>
+                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                            <button type="submit" class="btn btn-success fw-bold"><i class="bi bi-check-lg"></i> Simpan Verifikasi</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div> <?php if (in_array($user_email, ['superadmin@gmail.com', 'setum@gmail.com', 'admin@gmail.com'])): ?>
+                        <div class="modal fade" id="modalEditNoTgl<?= $row['id_surat'] ?>" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <form method="POST" action="proses_edit_no_tgl.php">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-dark text-white">
+                                            <h6 class="modal-title fw-bold"><i class="bi bi-pencil-square text-warning"></i> Ubah Nomor & Tanggal Surat</h6>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-start">
+                                            <input type="hidden" name="id_surat" value="<?= $row['id_surat'] ?>">
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-bold text-secondary">Nomor Surat Baru</label>
+                                                <input type="text" name="no_surat" class="form-control" value="<?= htmlspecialchars($row['no_surat'] ?? '') ?>" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-bold text-secondary">Tanggal Surat Baru</label>
+                                                <input type="date" name="tgl_surat" class="form-control" value="<?= $row['tanggal_surat'] ?? '' ?>" required>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                            <button type="submit" class="btn btn-sm btn-success fw-bold">Simpan Perubahan</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                        </td>
+                </tr>
+            <?php
+                endwhile;
                     </td>
                     
                 </tr>
@@ -454,7 +497,7 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    // Fungsi Pengganti Dropdown Manual
+    // 1. Fungsi Pengganti Dropdown Manual
     var dropButtons = document.querySelectorAll('.dropdown-toggle-btn');
     dropButtons.forEach(function (btn) {
         btn.addEventListener('click', function (e) {
@@ -471,21 +514,33 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Menutup menu jika klik di luar area tombol aksi (SUDAH DIPERBAIKI)
-    document.addEventListener('click', function () {
+    // 2. Menutup menu jika klik di luar area tombol aksi (DIPERBAIKI AGAR TIDAK BENTROK DENGAN MODAL)
+    document.addEventListener('click', function (e) {
+        // Jika yang diklik adalah bagian dari form modal atau input, abaikan (jangan tutup dropdown/reset fokus)
+        if (e.target.closest('.modal') || e.target.closest('.custom-modal-btn')) {
+            return;
+        }
         document.querySelectorAll('.dropdown-menu-list').forEach(function(m) {
             m.classList.add('d-none'); 
         });
     });
 
-    // Fungsi Penggerak Paksa Modal Verifikasi Berkas
+    // 3. Fungsi Penggerak Paksa Modal Verifikasi Berkas & Edit No/Tgl
     var modalTriggerBtns = document.querySelectorAll('.custom-modal-btn');
     modalTriggerBtns.forEach(function (btn) {
         btn.addEventListener('click', function (e) {
             e.preventDefault();
+            e.stopPropagation(); // Mencegah event merambat ke fungsi penutup dropdown secara tidak sengaja
+            
             var selectorId = this.getAttribute('data-target-modal');
             var targetedModalEl = document.querySelector(selectorId);
+            
             if (targetedModalEl) {
+                // Sembunyikan semua dropdown secara otomatis begitu tombol modal diklik
+                document.querySelectorAll('.dropdown-menu-list').forEach(function(m) {
+                    m.classList.add('d-none'); 
+                });
+
                 var modalObj = bootstrap.Modal.getInstance(targetedModalEl) || new bootstrap.Modal(targetedModalEl);
                 modalObj.show();
             } else {
