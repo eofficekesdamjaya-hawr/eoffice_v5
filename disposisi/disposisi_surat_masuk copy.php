@@ -85,16 +85,16 @@ if (isset($_POST['submit_disposisi_masuk'])) {
         $status_baca = "belum";
         $link_target = "dashboard.php"; 
 
-// --- SISTEM NOTIFIKASI AMAN (TRY-CATCH) ---
-try {
-    // 1. Notifikasi Penerima Utama (Lonceng aktif untuk semua role termasuk setum)
-    if (!empty($tujuan_disposisi) && $tujuan_disposisi !== 'tidak_ada') {
-        $query_notif = "INSERT INTO notifikasi (untuk_role, pesan, link, status_baca) VALUES (?, ?, ?, ?)";
-        $stmt_n = $conn->prepare($query_notif);
-        $stmt_n->bind_param("ssss", $tujuan_disposisi, $pesan_notif, $link_target, $status_baca);
-        $stmt_n->execute();
-        $stmt_n->close();
-    }
+        // --- SISTEM NOTIFIKASI AMAN (TRY-CATCH) ---
+        try {
+            // 1. Notifikasi Penerima Utama
+            if ($tujuan_disposisi !== 'tidak_ada') {
+                $query_notif = "INSERT INTO notifikasi (untuk_role, pesan, link, status_baca) VALUES (?, ?, ?, ?)";
+                $stmt_n = $conn->prepare($query_notif);
+                $stmt_n->bind_param("ssss", $tujuan_disposisi, $pesan_notif, $link_target, $status_baca);
+                $stmt_n->execute();
+                $stmt_n->close();
+            }
 
             // 2. Notifikasi Tembusan Berulang (Looping)
             foreach ($tembusan_array as $tembusan_role) {
