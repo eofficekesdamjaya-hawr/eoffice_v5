@@ -264,14 +264,6 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
                 <li><button type="button" class="border-0 bg-transparent text-dark w-100 text-start p-1 text-xs custom-modal-btn" data-target-modal="#modalEditNoTgl<?= $row['id_surat'] ?>"><i class="bi bi-pencil-square text-warning"></i> Edit No/Tgl Surat</button></li>
             <?php endif; ?>
         </ul>
-    </div>
-</div>
-
-
-                            <?php else: ?>
-                                <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm fw-bold"><i class="bi bi-reply-all-fill"></i> Jawab / Revisi</a>
-                            <?php endif; ?>
-                        </div>
 
                         <div class="modal fade" id="verifModal<?= $row['id_surat'] ?>" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered">
