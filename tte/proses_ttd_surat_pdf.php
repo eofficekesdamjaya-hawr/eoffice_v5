@@ -65,24 +65,28 @@ $folderUpload = "../uploads/surat_keluar/";
 $namaFileAsli = $surat['file_surat'];
 $pathAsli     = $folderUpload . $namaFileAsli;
 
-// Cek keberadaan file asli
 if (!file_exists($pathAsli)) {
     echo "<script>alert('File PDF asli tidak ditemukan!'); window.history.back();</script>";
     exit;
 }
 
-// Buat nama file baru dengan penanda tanda tangan
 $infoFile = pathinfo($namaFileAsli);
 $namaFileBaru = $infoFile['filename'] . "_ttd.pdf";
 $pathHasil = $folderUpload . $namaFileBaru;
 
 // --------------------------
-// 4. Inisialisasi FPDI (Menggunakan yang ada di libraries/fpdf)
+// 4. Inisialisasi FPDI Versi Lama (Tanpa Namespace)
 // --------------------------
-require_once "../libraries/fpdf/Fpdi.php";
+// Gunakan FPDI yang ada di folder libraries/fpdi/
+require_once "../libraries/fpdi/Fpdi.php";
 
-// Gunakan class FPDI tanpa namespace
-$pdf = new Fpdi();
+// Cek apakah class FPDI tersedia
+if (!class_exists('FPDI')) {
+    echo "<script>alert('Library PDF tidak ditemukan!'); window.history.back();</script>";
+    exit;
+}
+
+$pdf = new FPDI();
 
 // Ambil jumlah halaman
 $jumlahHalaman = $pdf->setSourceFile($pathAsli);
@@ -96,24 +100,21 @@ $nomorHalaman = $jumlahHalaman;
 $templateId = $pdf->importPage($nomorHalaman);
 $ukuranHalaman = $pdf->getTemplateSize($templateId);
 
-// Sesuaikan ukuran halaman
+// Tambah halaman sesuai ukuran asli
 $pdf->AddPage($ukuranHalaman['orientation'], [$ukuranHalaman['width'], $ukuranHalaman['height']]);
 $pdf->useTemplate($templateId);
 
-// Hitung skala konversi dari posisi canvas ke ukuran asli PDF
+// Hitung skala konversi posisi layar ke ukuran asli PDF
 $skala = $ukuranHalaman['width'] / $canvasW;
 
 // --------------------------
-// 5. Simpan & Sisipkan Tanda Tangan
+// 5. Proses & Sisipkan Gambar
 // --------------------------
-// Buat folder sementara untuk menyimpan gambar tanda tangan
 $folderSementara = "../uploads/sementara/";
-if (!file_exists($folderSementara)) {
-    mkdir($folderSementara, 0755, true);
-}
+if (!file_exists($folderSementara)) mkdir($folderSementara, 0755, true);
 $fileTtd = $folderSementara . "ttd_" . time() . ".png";
 
-// Konversi base64 ke file gambar
+// Simpan tanda tangan dari base64
 $ttdData = explode(',', $signatureData)[1];
 file_put_contents($fileTtd, base64_decode($ttdData));
 
@@ -138,34 +139,29 @@ if (file_exists($fileQr)) {
 }
 
 // --------------------------
-// 6. Simpan File PDF Hasil
+// 6. Simpan & Bersihkan
 // --------------------------
 $pdf->Output('F', $pathHasil);
-
-// Hapus file tanda tangan sementara
 @unlink($fileTtd);
 
 // --------------------------
-// 7. Update Data di Database
+// 7. Update Database
 // --------------------------
 $updateQuery = "UPDATE surat_keluar 
                 SET file_surat = ?, status_proses = 'selesai', ttd_oleh = ?, ttd_pada = NOW() 
                 WHERE id_surat = ?";
 $stmtUpdate = $conn->prepare($updateQuery);
 
-// Tentukan nama penandatangan berdasarkan email
-if (($_SESSION['email'] ?? '') === 'wakakesdamjaya2026@gmail.com') {
-    $ttdOleh = "Wakil Komandan Kesdam Jaya";
-} else {
-    $ttdOleh = "Komandan Kesdam Jaya";
-}
+$ttdOleh = ($_SESSION['email'] === 'wakakesdamjaya2026@gmail.com') 
+    ? "Wakil Komandan Kesdam Jaya" 
+    : "Komandan Kesdam Jaya";
 
 $stmtUpdate->bind_param("ssi", $namaFileBaru, $ttdOleh, $id_surat);
 $stmtUpdate->execute();
 $stmtUpdate->close();
 
 // --------------------------
-// 8. Redirect & Notifikasi
+// 8. Selesai
 // --------------------------
 echo "<script>
     alert('Tanda tangan berhasil diterapkan!');
