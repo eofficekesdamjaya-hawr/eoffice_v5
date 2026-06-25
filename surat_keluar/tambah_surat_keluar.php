@@ -20,7 +20,7 @@ $queryUser->execute();
 $resultUser = $queryUser->get_result()->fetch_assoc();
 
 // 3. Masukkan ke variabel $role_nama
-$role_nama = $resultUser['satuan'] ?? 'Unit Pengirim';
+$role_nama = $_SESSION['nama_role'] ?? 'Unit Pengirim';
 
 
 /* 1. GENERATE NOMOR AGENDA OTOMATIS */
