@@ -7,35 +7,47 @@ date_default_timezone_set('Asia/Jakarta');
 // 2. LOAD CORE FPDF
 require_once __DIR__ . '/../libraries/fpdf/fpdf.php';
 
-// 3. AUTOLOADER MANUAL UNTUK FPDI v2.x (Menggantikan Composer vendor/autoload)
-spl_autoload_register(function ($class) {
-    $prefix = 'setasign\\Fpdi\\';
-    $base_dir = __DIR__ . '/../libraries/fpdi/src/';
+// 3. FORCE INJECT SELURUH DEPENDENSI FPDI SECARA MANUAL
+// Memanggil komponen utama
+require_once __DIR__ . '/../libraries/fpdi/src/FpdiException.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/PdfParserException.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfTypeException.php';
 
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
-        return;
-    }
+// Memanggil Parser Komponen Data Stream (Penyebab Error Sebelumnya)
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/StreamReader.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/CrossReference/CrossReferenceException.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/CrossReference/CrossReference.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/PdfParser.php';
 
-    $relative_class = substr($class, $len);
-    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+// Memanggil Jenis Objek PDF Dasar
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfType.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfToken.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfNull.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfBoolean.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfNumeric.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfString.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfName.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfArray.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfDictionary.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfStream.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfIndirectObject.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfParser/Type/PdfIndirectObjectReference.php';
 
-    if (file_exists($file)) {
-        require_once $file;
-    }
-});
+// Memanggil Reader Halaman Dokumen
+require_once __DIR__ . '/../libraries/fpdi/src/PdfReader/PdfReaderException.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfReader/PdfReader.php';
+require_once __DIR__ . '/../libraries/fpdi/src/PdfReader/Page.php';
 
-// Load file global tambahan yang berada di luar folder src (Wajib untuk FPDI v2 tanpa Composer)
+// Memanggil File Trait Global Luar
 require_once __DIR__ . '/../libraries/fpdi/FpdfTplTrait.php';
 require_once __DIR__ . '/../libraries/fpdi/FpdfTpl.php';
 require_once __DIR__ . '/../libraries/fpdi/FpdiTrait.php';
 
-// Kelas ekstensi kustom gabungan FPDF + FPDI Trait
+// Kelas eksekusi gabungan FPDF + FPDI Trait resmi
 class FpdiBridge extends FPDF {
     use \setasign\Fpdi\FpdfTplTrait;
     use \setasign\Fpdi\FpdiTrait;
 }
-
 // Pastikan hanya diakses melalui pengiriman form POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
