@@ -226,8 +226,11 @@ include '../layout/header.php';
         <option value="korpri_kesdam">Korpri</option>
     <?php elseif (strtolower($role) === 'wakakesdam_jaya'): ?>
         <option value="kakesdam_jaya">Kakesdam Jaya (ACC / Teruskan Berjenjang)</option>
+        <option value="setum">setum</option>
         <option value="spri_pimpinan">Spri Pimpinan</option>
     <?php elseif (strtolower($role) === 'kakesdam_jaya'): ?>
+        <option value="wakakesdam_jaya">Wakakesdam Jaya</option>
+        <option value="setum">setum</option>
         <option value="spri_pimpinan">Spri Pimpinan</option>
 
 <?php elseif (strtolower($role) === 'spri_pimpinan' || strtolower($role) === 'spri'): ?>
