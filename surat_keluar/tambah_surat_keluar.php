@@ -10,14 +10,15 @@ if (!isset($_SESSION['id_user'])) {
 }
 
 $id_user = (int)($_SESSION['id_user'] ?? 0);
-// MENGAMBIL ASAL_SATUAN DARI DATABASE
-$queryUser = $conn->prepare("SELECT asal_satuan FROM users WHERE id_user = ?");
+
+// MENGAMBIL 'satuan' DARI DATABASE (Tabel users, kolomnya bernama 'satuan')
+$queryUser = $conn->prepare("SELECT satuan FROM users WHERE id = ?"); // Pastikan id tabel users adalah 'id'
 $queryUser->bind_param("i", $id_user);
 $queryUser->execute();
 $resultUser = $queryUser->get_result()->fetch_assoc();
 
-// Gunakan 'asal_satuan' dari DB, jika tidak ada gunakan default 'Unit Pengirim'
-$role_nama = $resultUser['asal_satuan'] ?? 'Unit Pengirim';
+// Gunakan 'satuan' dari DB, jika tidak ada gunakan default 'Unit Pengirim'
+$role_nama = $resultUser['satuan'] ?? 'Unit Pengirim';
 
 
 /* 1. GENERATE NOMOR AGENDA OTOMATIS */
