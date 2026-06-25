@@ -248,10 +248,10 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
             <a href="hapus_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas Surat Masuk?')"><i class="bi bi-trash"></i> Hapus</a>
             
             <div class="dropdown">
-                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" data-bs-strategy="fixed" aria-expanded="false">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropGrup1_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
                     Menu Lainnya
                 </button>
-                <ul class="dropdown-menu shadow">
+                <ul class="dropdown-menu shadow" aria-labelledby="dropGrup1_<?= $row['id_surat'] ?>">
                     <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
                     <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
                 </ul>
@@ -269,10 +269,10 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
             <?php endif; ?>
 
             <div class="dropdown">
-                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" data-bs-strategy="fixed" aria-expanded="false">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropGrup2_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
                     Menu Lainnya
                 </button>
-                <ul class="dropdown-menu shadow">
+                <ul class="dropdown-menu shadow" aria-labelledby="dropGrup2_<?= $row['id_surat'] ?>">
                     <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
                     <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
                 </ul>
@@ -286,10 +286,10 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
             <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold text-xs"><i class="bi bi-shuffle"></i> Disposisi</a>
             
             <div class="dropdown">
-                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" data-bs-strategy="fixed" aria-expanded="false">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropGrup3_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
                     Menu Lainnya
                 </button>
-                <ul class="dropdown-menu shadow">
+                <ul class="dropdown-menu shadow" aria-labelledby="dropGrup3_<?= $row['id_surat'] ?>">
                     <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
                     <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
                 </ul>
@@ -302,10 +302,10 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
             <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm fw-bold text-xs"><i class="bi bi-reply-all-fill"></i> Jawab / Revisi</a>
             
             <div class="dropdown mt-1">
-                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" data-bs-strategy="fixed" aria-expanded="false">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropGrup4_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
                     Lainnya
                 </button>
-                <ul class="dropdown-menu shadow">
+                <ul class="dropdown-menu shadow" aria-labelledby="dropGrup4_<?= $row['id_surat'] ?>">
                     <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
                     <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
                 </ul>
@@ -314,45 +314,42 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
 
     </div>
 
+    <div class="modal fade" id="verifModalMasuk<?= $row['id_surat'] ?>" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form action="../transifikasi/proses_verifikasi_surat.php" method="POST" class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title fw-bold fs-6"><i class="bi bi-shield-check"></i> Lembar Verifikasi No: <?= htmlspecialchars($row['no_agenda'] ?? '-') ?></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-start">
+                    <input type="hidden" name="id_surat" value="<?= $row['id_surat'] ?>">
+                    <input type="hidden" name="jenis_tabel" value="masuk">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-xs mb-1">Status Verifikasi Berkas Masuk:</label>
+                        <select class="form-select border-primary text-xs" name="status_proses" required>
+                            <option value="Diterima" <?= ($row['status_proses'] ?? '') == 'Diterima' ? 'selected':'' ?>>✅ Diterima</option>
+                            <option value="Ditolak" <?= ($row['status_proses'] ?? '') == 'Ditolak' ? 'selected':'' ?>>❌ Ditolak</option>
+                            <option value="Proses Disposisi" <?= ($row['status_proses'] ?? '') == 'Proses Disposisi' ? 'selected':'' ?>>📝 Proses Disposisi</option>
+                            <option value="Sudah Didisposisikan" <?= ($row['status_proses'] ?? '') == 'Sudah Didisposisikan' ? 'selected':'' ?>>📌 Sudah Didisposisikan</option>
+                            <option value="Dalam Proses" <?= ($row['status_proses'] ?? '') == 'Dalam Proses' ? 'selected':'' ?>>⚙️ Dalam Proses</option>
+                            <option value="Ditindaklanjuti/Dijawab" <?= ($row['status_proses'] ?? '') == 'Ditindaklanjuti/Dijawab' ? 'selected':'' ?>>📤 Ditindaklanjuti/Dijawab</option>
+                            <option value="Selesai & Diarsipkan" <?= ($row['status_proses'] ?? '') == 'Selesai & Diarsipkan' ? 'selected':'' ?>>📂 Selesai & Diarsipkan</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-xs mb-1">Catatan Verifikator:</label>
+                        <textarea class="form-control text-xs" name="catatan_verif" rows="3" placeholder="Tulis instruksi atau catatan berkas..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" name="submit_verif" class="btn btn-warning btn-sm fw-bold">Simpan Keputusan</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-
-           
-                        <div class="modal fade" id="verifModalMasuk<?= $row['id_surat'] ?>" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <form action="../transifikasi/proses_verifikasi_surat.php" method="POST" class="modal-content">
-                                    <div class="modal-header bg-warning text-dark">
-                                        <h5 class="modal-title fw-bold fs-6"><i class="bi bi-shield-check"></i> Lembar Verifikasi No: <?= htmlspecialchars($row['no_agenda'] ?? '-') ?></h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                    </div>
-                                    <div class="modal-body text-start">
-                                        <input type="hidden" name="id_surat" value="<?= $row['id_surat'] ?>">
-                                        <input type="hidden" name="jenis_tabel" value="masuk">
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold text-xs mb-1">Status Verifikasi Berkas Masuk:</label>
-                                            <select class="form-select border-primary text-xs" name="status_proses" required>
-                                                <option value="Diterima" <?= ($row['status_proses'] ?? '') == 'Diterima' ? 'selected':'' ?>>✅ Diterima</option>
-                                                <option value="Ditolak" <?= ($row['status_proses'] ?? '') == 'Ditolak' ? 'selected':'' ?>>❌ Ditolak</option>
-                                                <option value="Proses Disposisi" <?= ($row['status_proses'] ?? '') == 'Proses Disposisi' ? 'selected':'' ?>>📝 Proses Disposisi</option>
-                                                <option value="Sudah Didisposisikan" <?= ($row['status_proses'] ?? '') == 'Sudah Didisposisikan' ? 'selected':'' ?>>📌 Sudah Didisposisikan</option>
-                                                <option value="Dalam Proses" <?= ($row['status_proses'] ?? '') == 'Dalam Proses' ? 'selected':'' ?>>⚙️ Dalam Proses</option>
-                                                <option value="Ditindaklanjuti/Dijawab" <?= ($row['status_proses'] ?? '') == 'Ditindaklanjuti/Dijawab' ? 'selected':'' ?>>📤 Ditindaklanjuti/Dijawab</option>
-                                                <option value="Selesai & Diarsipkan" <?= ($row['status_proses'] ?? '') == 'Selesai & Diarsipkan' ? 'selected':'' ?>>📂 Selesai & Diarsipkan</option>
-                                            </select>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold text-xs mb-1">Catatan Verifikator:</label>
-                                            <textarea class="form-control text-xs" name="catatan_verif" rows="3" placeholder="Tulis instruksi atau catatan berkas..." required></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer bg-light">
-                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
-                                        <button type="submit" name="submit_verif" class="btn btn-warning btn-sm fw-bold">Simpan Keputusan</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-
-                    </td>
+</td>
                 </tr>
             <?php 
                 endwhile;
