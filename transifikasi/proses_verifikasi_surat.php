@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_surat      = isset($_POST['id']) ? intval($_POST['id']) : 0;
     $status_baru   = isset($_POST['status']) ? trim($_POST['status']) : '';
     
-    // Fitur tambahan penentu jenis tabel (default ke keluar jika tidak didefinisikan)
+    // Fitur penentu jenis tabel (default ke 'keluar')
     $jenis_tabel   = isset($_POST['jenis_tabel']) ? $_POST['jenis_tabel'] : 'keluar'; 
     $tabel_target  = ($jenis_tabel === 'masuk') ? 'surat_masuk' : 'surat_keluar';
 
@@ -24,8 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     date_default_timezone_set('Asia/Jakarta');
     $waktu_log     = date('d-m-Y H:i');
 
-    // Tentukan tujuan redirect halaman utama Anda setelah selesai
-    // Silakan ganti 'otoritas_pengendali.php' dengan nama asli file utama tabel Anda jika berbeda
+    // Mengunci jalur kembali tepat ke file utama Anda
     $halaman_utama = '../transifikasi/otoritas_pengendali.php'; 
 
     // Validasi data minimal harus terpenuhi
