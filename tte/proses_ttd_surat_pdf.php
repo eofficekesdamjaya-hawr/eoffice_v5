@@ -4,15 +4,10 @@ require_once "../config/session.php";
 require_once "../config/koneksi.php";
 date_default_timezone_set('Asia/Jakarta');
 
-// 2. Pemanggilan Vendor Autoloader Resmi (Otomatis memuat FPDF & FPDI tanpa error path)
-require_once __DIR__ . '/../vendor/autoload.php';
+// 2. Load Berkas Library FPDF & FPDI Secara Flat (Sesuai Struktur Hasil ls -l Anda)
+require_once __DIR__ . '/../libraries/fpdf/fpdf.php';
+require_once __DIR__ . '/../libraries/fpdi/fpdi.php';
 
-use setasign\Fpdi\Fpdi;
-
-// Kelas eksekusi gabungan FPDF + FPDI
-class FpdiBridge extends Fpdi {
-    // Kosongkan karena semua fungsionalitas otomatis diwarisi dari library vendor terbaru
-}
 // Pastikan hanya diakses melalui pengiriman form POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -32,16 +27,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $canvas_width   = isset($_POST['canvas_width']) ? floatval($_POST['canvas_width']) : 1;
     $canvas_height  = isset($_POST['canvas_height']) ? floatval($_POST['canvas_height']) : 1;
 
+    // Ambil data gambar TTD mentah (Base64) dari signature pad
     $signature_data = isset($_POST['signature_data']) ? $_POST['signature_data'] : '';
 
+    // Ambil identitas penandatangan dari session
     $nama_user      = $_SESSION['nama_user'] ?? $_SESSION['nama'] ?? 'Kakesdam Jaya';
     $role_aktif     = $_SESSION['tipe_akses'] ?? 'Pimpinan';
     $waktu_log      = date('d-m-Y H:i');
 
+    // Tentukan halaman redirect utama
     $halaman_utama  = "../transaksi/kelola_surat_{$jenis_tabel}.php";
 
+    // 3. Validasi minimal parameter data
     if ($id_surat > 0 && !empty($signature_data)) {
 
+        // 4. AMBIL DATA FILE SURAT DARI DATABASE
         $queryFile = "SELECT file_surat, keterangan FROM {$tabel_target} WHERE id_surat = ?";
         $stmtFile  = $conn->prepare($queryFile);
         $stmtFile->bind_param("i", $id_surat);
@@ -58,33 +58,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
 
+        // ===================================================================
+        // PROSES INJEKSI ELEMEN (TTD, STEMPEL, QR) KE PDF MENGGUNAKAN FPDI
+        // ===================================================================
         try {
+            // Konversi Base64 Signature Pad ke File Gambar Sementara (PNG)
             $filteredData = explode(',', $signature_data);
             $unencodedData = base64_decode($filteredData[1]);
             $temp_ttd_path = "../uploads/surat_keluar/temp_ttd_" . $id_surat . ".png";
             file_put_contents($temp_ttd_path, $unencodedData);
 
+            // Path komponen bawaan statis
             $path_stempel = "../assets/stempel_kesdam1.png";
             $path_qr      = "../assets/qr_dummy.png";
 
-            // Inisialisasi jembatan objek FPDI baru hasil deklarasi autoloader manual
-            $pdf = new FpdiBridge();
+            // Inisialisasi FPDI Versi Lama (Tanpa Namespace)
+            $pdf = new FPDI();
             $pageCount = $pdf->setSourceFile($path_file);
 
+            // Loop seluruh halaman untuk menyalin isinya
             for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
                 $templateId = $pdf->importPage($pageNo);
                 $size = $pdf->getTemplateSize($templateId);
 
-                $pdf->AddPage($size['orientation'], [$size['width'], $size['height']]);
+                // Buat halaman baru dengan orientasi dan ukuran sama seperti aslinya
+                $pdf->AddPage($size['h'] > $size['w'] ? 'P' : 'L', array($size['w'], $size['h']));
                 $pdf->useTemplate($templateId);
 
+                // Jika ini adalah halaman terakhir, tempelkan TTD, Stempel, dan QR
                 if ($pageNo === $pageCount) {
-                    $pdf_w = $size['width'];
-                    $pdf_h = $size['height'];
+                    $pdf_w = $size['w'];
+                    $pdf_h = $size['h'];
 
+                    // Rasio Konversi dari Koordinat Layar Canvas ke Milimeter PDF
                     $ratio_x = $pdf_w / $canvas_width;
                     $ratio_y = $pdf_h / $canvas_height;
 
+                    // Ukuran komponen di dalam PDF (dalam mm)
                     $w_ttd_mm = 150 * $ratio_x;
                     $h_ttd_mm = 60 * $ratio_y;
                     
@@ -94,6 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $w_qr_mm = 75 * $ratio_x;
                     $h_qr_mm = 75 * $ratio_y;
 
+                    // Konversi koordinat X & Y ke Milimeter PDF
                     $mm_x_ttd = $pos_x_ttd * $ratio_x;
                     $mm_y_ttd = $pos_y_ttd * $ratio_y;
 
@@ -103,22 +114,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $mm_x_qr = $pos_x_qr * $ratio_x;
                     $mm_y_qr = $pos_y_qr * $ratio_y;
 
+                    // Tempel Gambar Tanda Tangan Hasil Goresan
                     if (file_exists($temp_ttd_path)) {
                         $pdf->Image($temp_ttd_path, $mm_x_ttd, $mm_y_ttd, $w_ttd_mm, $h_ttd_mm);
                     }
                     
+                    // Tempel Gambar Stempel Resmi
                     if (file_exists($path_stempel)) {
                         $pdf->Image($path_stempel, $mm_x_stempel, $mm_y_stempel, $w_stempel_mm, $h_stempel_mm);
                     }
 
+                    // Tempel Gambar QR Code Berkas
                     if (file_exists($path_qr)) {
                         $pdf->Image($path_qr, $mm_x_qr, $mm_y_qr, $w_qr_mm, $h_qr_mm);
                     }
                 }
             }
 
+            // Simpan kembali menimpa file draf PDF lama dengan yang sudah di-TTE
             $pdf->Output($path_file, 'F');
 
+            // Hapus file sampah TTD sementara demi kebersihan server
             if (file_exists($temp_ttd_path)) {
                 unlink($temp_ttd_path);
             }
@@ -128,6 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
 
+        // 5. UPDATE DATABASE LOG & STATUS PROSES
         $status_baru  = "Selesai (TTE Diterapkan)";
         $riwayat_baru = "[{$waktu_log}] - *{$nama_user} ({$role_aktif})* telah menandatangani dokumen secara digital (TTE).\n-------------------\n" . $riwayat_lama;
 
