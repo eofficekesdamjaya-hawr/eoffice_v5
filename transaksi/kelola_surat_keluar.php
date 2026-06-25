@@ -1,15 +1,17 @@
 <?php
 require_once __DIR__.'/../config/session.php';
-
 require_once "../config/koneksi.php";
-
-// HUBUNGKAN KE SISTEM AUTH TERPUSAT KESDAM
 require_once "../config/auth_config.php"; 
 require_once "../config/hak_akses.php";   
 
-// Inisialisasi aman untuk variabel pemicu warning log
-$user_role = $user_role ?? $_SESSION['role'] ?? 'stranger';
-$user_email = $_SESSION['email'] ?? '';
+// SINKRONISASI DENGAN STRUKTUR SESSION ANDA
+$id_user     = $_SESSION['id_user'] ?? '';
+$nama_user   = $_SESSION['nama_user'] ?? 'Personel Ruangan';
+$tipe_akses  = $_SESSION['tipe_akses'] ?? '';
+
+// Menentukan user_role untuk kebutuhan filter (diambil dari tipe_akses session)
+$user_role   = $tipe_akses; 
+$user_email  = $_SESSION['email'] ?? ''; // Jika ada email di session
 
 $ruanganMap = [
     1 => 'Seksi Tuud', 2 => 'Seksi Was', 3 => 'Seksi Dukkes', 
@@ -29,18 +31,18 @@ if ($filter === 'disposisi') {
     $additional_query = " AND status_proses = 'Selesai'";
 }
 
-// MENYESUAIKAN ROLE: Jika pimpinan membuka halaman utama tanpa filter khusus
+// MENYESUAIKAN ROLE: Jika pimpinan/ruangan membuka halaman utama tanpa filter khusus
 if ($user_role === 'pimpinan' && empty($filter)) {
     $additional_query .= " AND (status_proses = 'Proses Disposisi' OR status_proses = 'Pending')";
 }
 
-// PROTEKSI RUANGAN: Jika role ruangan, batasi hanya surat miliknya
-if ($user_role === 'ruangan' || $user_role === 'stranger') {
-    $safe_creator = mysqli_real_escape_string($conn, $_SESSION['id_user'] ?? '');
+// PROTEKSI DATA: Jika tipe aksesnya ruangan, batasi hanya melihat surat miliknya sendiri
+if ($user_role === 'ruangan') {
+    $safe_creator = mysqli_real_escape_string($conn, $id_user);
     $additional_query .= " AND created_by = '$safe_creator'";
 }
 
-// 2. QUERY DATA SINKRON FILTER DENGAN SECURITY CHECK
+// QUERY DATA SINKRON
 $sqlHariIni = "SELECT * FROM surat_keluar WHERE DATE(created_at) = CURDATE() $additional_query ORDER BY id_surat DESC";
 $resHariIni = mysqli_query($conn, $sqlHariIni);
 
@@ -89,12 +91,12 @@ if ($user_role === 'ruangan' || $user_role === 'stranger') {
         <div class="container-fluid">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h4 class="fw-bold text-dark mb-0"><i class="bi bi-envelope-arrow-up-fill text-info me-2"></i>Otoritas Pengendali Surat Keluar Kesdam Jaya</h4>
-                    <small class="text-muted">Log Aktivitas Sebagai: <span class="badge bg-danger text-uppercase"><?= htmlspecialchars($user_role) ?></span></small>
-                    <?php if(!empty($filter)): ?>
-                        <span class="badge bg-primary ms-2"><i class="bi bi-funnel-fill"></i> MODE FILTER: <?= strtoupper(str_replace('_', ' ', $filter)) ?></span>
-                    <?php endif; ?>
-                </div>
+    <h4 class="fw-bold text-dark mb-0"><i class="bi bi-envelope-arrow-up-fill text-info me-2"></i>Otoritas Pengendali Surat Keluar Kesdam Jaya</h4>
+    <small class="text-muted">Log Aktivitas Sebagai: <span class="badge bg-danger text-uppercase"><?= htmlspecialchars($nama_user) ?></span></small>
+    <?php if(!empty($filter)): ?>
+        <span class="badge bg-primary ms-2"><i class="bi bi-funnel-fill"></i> MODE FILTER: <?= strtoupper(str_replace('_', ' ', $filter)) ?></span>
+    <?php endif; ?>
+</div>
             </div>
 
             <div class="d-flex justify-content-start mb-3">
