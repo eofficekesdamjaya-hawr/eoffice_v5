@@ -182,7 +182,8 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
                     $kode_asal = trim($row['created_by'] ?? '');
                     $asal_ruangan = isset($asalMap[$kode_asal]) ? $asalMap[$kode_asal] : ($row['asal_satuan'] ?? 'Ruangan');
             ?>
-                <tr>
+               
+               <tr>
                     <td class="text-center fw-bold"><?= $no++ ?></td>
                     <td>
                         <span class="fw-bold text-primary"><?= htmlspecialchars($row['no_agenda'] ?? '-') ?></span><br>
@@ -219,10 +220,16 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
 
 
                     <div class="d-flex flex-column gap-1">
-    <?php if (trim(strtolower($row['status_proses'] ?? '')) === 'selesai'): ?>
+<?php if (trim(strtolower($row['status_proses'] ?? '')) === 'selesai'): ?>
+    <?php if (!empty($row['file_surat'])): ?>
+        <a href="../uploads/surat_keluar/<?= urlencode($row['file_surat']) ?>" target="_blank" class="btn btn-success btn-sm fw-bold w-100">
+            <i class="bi bi-patch-check-fill"></i> Lihat Surat (Sudah TTD)
+        </a>
+    <?php else: ?>
         <span class="btn btn-success btn-sm fw-bold disabled w-100">
-            <i class="bi bi-patch-check-fill"></i> Sudah TTD
+            <i class="bi bi-patch-check-fill"></i> Sudah TTD (File Kosong)
         </span>
+    <?php endif; ?>
         
         <?php if (in_array($user_role, ['superadmin', 'kakesdam_jaya', 'wakakesdam_jaya', 'kasi_tuud'])): ?>
             <a href="../tte/hapus_ttd_aksi.php?id=<?= $row['id_surat'] ?>&jenis=keluar" 
