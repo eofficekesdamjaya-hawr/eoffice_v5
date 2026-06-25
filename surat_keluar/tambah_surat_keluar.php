@@ -9,15 +9,17 @@ if (!isset($_SESSION['id_user'])) {
     exit;
 }
 
+// 1. Ambil ID dari session
 $id_user = (int)($_SESSION['id_user'] ?? 0);
 
-// MENGAMBIL 'satuan' DARI DATABASE (Tabel users, kolomnya bernama 'satuan')
-$queryUser = $conn->prepare("SELECT satuan FROM users WHERE id = ?"); // Pastikan id tabel users adalah 'id'
+// 2. Ambil data satuan spesifik untuk user yang sedang login
+// Kita gunakan 'id' karena itulah nama primary key di tabel users Anda
+$queryUser = $conn->prepare("SELECT satuan FROM users WHERE id = ?"); 
 $queryUser->bind_param("i", $id_user);
 $queryUser->execute();
 $resultUser = $queryUser->get_result()->fetch_assoc();
 
-// Gunakan 'satuan' dari DB, jika tidak ada gunakan default 'Unit Pengirim'
+// 3. Masukkan ke variabel $role_nama
 $role_nama = $resultUser['satuan'] ?? 'Unit Pengirim';
 
 
