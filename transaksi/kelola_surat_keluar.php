@@ -3,12 +3,6 @@ require_once __DIR__.'/../config/session.php';
 require_once "../config/koneksi.php";
 require_once "../config/auth_config.php"; 
 require_once "../config/hak_akses.php";   
-
-echo "<pre>";
-print_r($_SESSION);
-echo "</pre>";
-exit();
-
 // SINKRONISASI DENGAN STRUKTUR SESSION ANDA
 $id_user     = $_SESSION['id_user'] ?? '';
 $nama_user   = $_SESSION['nama_user'] ?? 'Personel Ruangan';
@@ -219,6 +213,64 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
                     </td>
 <td class="text-center"><?= renderBadgeAlur($row['status_proses'] ?? 'Pending') ?></td>
 <td>
+    <div class="d-flex flex-column gap-1">
+        
+        <?php 
+        // GRUP 1: Otoritas Penuh & Pengendali Utama Komando (Superadmin, Kakesdam, Wakakesdam, Kasi TUUD)
+        if (in_array($user_role, ['superadmin', 'kakesdam_jaya', 'wakakesdam_jaya', 'kasi_tuud'])): 
+        ?>
+            <button type="button" class="btn btn-warning btn-sm fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#verifModal<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
+            <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
+            <a href="../tte/ttd_surat.php?id=<?= $row['id_surat'] ?>&action=tte" class="btn btn-success btn-sm text-xs fw-bold"><i class="bi bi-pen-fill"></i> TTD Surat</a>
+            <a href="../surat_keluar/hapus_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
+            
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu Lainnya</button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item text-xs" href="../surat_keluar/detail_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
+                    <li><a class="dropdown-item text-xs" href="../surat_keluar/riwayat_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
+                    <li><button type="button" class="dropdown-item text-xs" data-bs-toggle="modal" data-bs-target="#editModal<?= $row['id_surat'] ?>"><i class="bi bi-pencil"></i> Edit No/Tgl/Surat</button></li>
+                </ul>
+            </div>
+
+        <?php // GRUP 2: Staf Sekretariat / Pengelola Berkas (Setum & Admin)
+        elseif (in_array($user_role, ['setum', 'admin'])): ?>
+            <button type="button" class="btn btn-warning btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#verifModal<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
+            <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
+            
+            <?php if ($user_email === 'admin@gmail.com'): ?>
+                <a href="../surat_keluar/hapus_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
+            <?php endif; ?>
+
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu Lainnya</button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item text-xs" href="../surat_keluar/detail_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
+                    <li><a class="dropdown-item text-xs" href="../surat_keluar/riwayat_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
+                    <li><button type="button" class="dropdown-item text-xs" data-bs-toggle="modal" data-bs-target="#editModal<?= $row['id_surat'] ?>"><i class="bi bi-pencil-square"></i> Edit No/Tgl Surat</button></li>
+                </ul>
+            </div>
+
+        <?php // GRUP 3: Spri Pimpinan (Akses Terbatas, Tidak Ada Tombol TTD & Hapus)
+        elseif ($user_role === 'spri_pimpinan'): ?>
+            <button type="button" class="btn btn-warning btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#verifModal<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
+            <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
+            
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu Lainnya</button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item text-xs" href="../surat_keluar/detail_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
+                    <li><a class="dropdown-item text-xs" href="../surat_keluar/riwayat_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
+                </ul>
+            </div>
+
+        <?php // GRUP DEFAULT: Ruangan / User Lain (Hanya bisa revisi/jawab)
+        else: ?>
+            <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm fw-bold"><i class="bi bi-reply-all-fill"></i> Jawab / Revisi</a>
+        <?php endif; ?>
+
+    </div>
+</td>
     <div class="d-flex flex-column gap-1">
         
         <?php 
