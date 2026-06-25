@@ -10,8 +10,7 @@ $nama_user    = $_SESSION['nama_user'] ?? ($_SESSION['nama'] ?? 'Personel Ruanga
 $tipe_akses   = $_SESSION['tipe_akses'] ?? ''; 
 $role_ruangan = strtolower(trim($nama_user));
 
-// --- PERBAIKAN PROTEKSI OTORITAS HALAMAN ---
-// Menambahkan kakesdam_jaya, wakakesdam_jaya, spri_pimpinan, setum, dan admin ke dalam whitelist akses
+// --- FIX FIX FIX: PROTEKSI OTORITAS HALAMAN (SINKRON DENGAN HAK_AKSES.PHP) ---
 $allowed_roles = ['superadmin', 'setum', 'admin', 'kasi_tuud', 'kakesdam_jaya', 'wakakesdam_jaya', 'spri_pimpinan', 'ruangan'];
 
 if (!in_array($user_role, $allowed_roles) && $tipe_akses !== 'ruangan') {
@@ -54,14 +53,13 @@ if ($user_role === 'ruangan' || $tipe_akses === 'ruangan') {
     )";
 }
 
-// --- PERBAIKAN LOGIKA FILTER PIMPINAN ---
-// Menyelaraskan role pimpinan sesuai dengan file hak_akses.php
+// --- FIX FIX FIX: LOGIKA OTOMATIS FILTER UNTUK PIMPINAN (Kakesdam, Wakakesdam, Spri) ---
 $pimpinan_roles = ['kakesdam_jaya', 'wakakesdam_jaya', 'spri_pimpinan'];
 if (in_array($user_role, $pimpinan_roles) && empty($filter)) {
     $additional_query .= " AND (sm.status_proses = 'Proses Disposisi' OR sm.status_proses = 'Pending' OR sm.status_proses = 'Baru')";
 }
 
-// QUERY DATA SURAT MASUK
+// QUERY DATA SURAT MASUK (SINKRON DENGAN STRUKTUR ID_SURAT & TANGGAL_INPUT)
 $sqlHariIni = "SELECT sm.*, u.nama AS nama_pembuat 
                FROM surat_masuk sm 
                LEFT JOIN disposisi_surat ds ON sm.id_surat = ds.id_surat
@@ -136,8 +134,8 @@ if ($user_role === 'ruangan' || $tipe_akses === 'ruangan') {
                 </div>
                 <div>
                     <?php if (in_array($user_role, ['superadmin', 'setum', 'admin', 'kasi_tuud'])): ?>
-    <a href="../surat_masuk/tambah_surat_masuk.php" class="btn btn-success fw-bold shadow-sm"><i class="bi bi-plus-lg"></i> Tambah Surat Masuk</a>
-<?php endif; ?>
+                        <a href="../surat_masuk/tambah_surat_masuk.php" class="btn btn-success fw-bold shadow-sm"><i class="bi bi-plus-lg"></i> Tambah Surat Masuk</a>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -242,7 +240,7 @@ function displayTableSuratMasuk($result, $user_role, $tipe_akses, $ruanganMap) {
                                     </ul>
                                 </div>
 
-                            <?php elseif ($user_role === 'staff_inti'): ?>
+                            <?php elseif (in_array($user_role, ['setum', 'admin', 'kasi_tuud'])): ?>
                                 <button type="button" class="btn btn-warning btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
                                 <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-success btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
                                 
@@ -258,7 +256,7 @@ function displayTableSuratMasuk($result, $user_role, $tipe_akses, $ruanganMap) {
                                     </ul>
                                 </div>
 
-                            <?php elseif (in_array($user_role, ['pimpinan', 'ruangan']) || $tipe_akses === 'ruangan'): ?>
+                            <?php elseif (in_array($user_role, ['kakesdam_jaya', 'wakakesdam_jaya', 'spri_pimpinan', 'ruangan']) || $tipe_akses === 'ruangan'): ?>
                                 <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-success btn-sm fw-bold"><i class="bi bi-shuffle"></i> Buka Disposisi</a>
                                 <a href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-outline-secondary btn-sm text-xs"><i class="bi bi-eye"></i> Detail</a>
                                 <a href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-outline-primary btn-sm text-xs mt-1"><i class="bi bi-clock-history"></i> Riwayat</a>
