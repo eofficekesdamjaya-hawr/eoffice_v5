@@ -247,11 +247,13 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
             <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold text-xs"><i class="bi bi-shuffle"></i> Disposisi</a>
             <a href="hapus_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas Surat Masuk?')"><i class="bi bi-trash"></i> Hapus</a>
             
-            <div class="dropdown dropstart d-block w-100 mt-1">
-                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropMenu1_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">Menu Lainnya</button>
-                <ul class="dropdown-menu shadow" aria-labelledby="dropMenu1_<?= $row['id_surat'] ?>">
-                    <li><a class="dropdown-item text-xs py-2" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
-                    <li><a class="dropdown-item text-xs py-2" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" data-bs-strategy="fixed" aria-expanded="false">
+                    Menu Lainnya
+                </button>
+                <ul class="dropdown-menu shadow">
+                    <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
+                    <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
                 </ul>
             </div>
 
@@ -266,11 +268,13 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
                 <a href="hapus_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
             <?php endif; ?>
 
-            <div class="dropdown dropstart d-block w-100 mt-1">
-                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropMenu2_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">Menu Lainnya</button>
-                <ul class="dropdown-menu shadow" aria-labelledby="dropMenu2_<?= $row['id_surat'] ?>">
-                    <li><a class="dropdown-item text-xs py-2" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
-                    <li><a class="dropdown-item text-xs py-2" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" data-bs-strategy="fixed" aria-expanded="false">
+                    Menu Lainnya
+                </button>
+                <ul class="dropdown-menu shadow">
+                    <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
+                    <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
                 </ul>
             </div>
 
@@ -281,11 +285,13 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
             <button type="button" class="btn btn-warning btn-sm fw-bold text-xs" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
             <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold text-xs"><i class="bi bi-shuffle"></i> Disposisi</a>
             
-            <div class="dropdown dropstart d-block w-100 mt-1">
-                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropMenu3_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">Menu Lainnya</button>
-                <ul class="dropdown-menu shadow" aria-labelledby="dropMenu3_<?= $row['id_surat'] ?>">
-                    <li><a class="dropdown-item text-xs py-2" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
-                    <li><a class="dropdown-item text-xs py-2" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" data-bs-strategy="fixed" aria-expanded="false">
+                    Menu Lainnya
+                </button>
+                <ul class="dropdown-menu shadow">
+                    <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
+                    <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
                 </ul>
             </div>
 
@@ -295,11 +301,13 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
         ?>
             <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm fw-bold text-xs"><i class="bi bi-reply-all-fill"></i> Jawab / Revisi</a>
             
-            <div class="dropdown dropstart d-block w-100 mt-1">
-                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropMenu4_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">Lainnya</button>
-                <ul class="dropdown-menu shadow" aria-labelledby="dropMenu4_<?= $row['id_surat'] ?>">
-                    <li><a class="dropdown-item text-xs py-2" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
-                    <li><a class="dropdown-item text-xs py-2" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
+            <div class="dropdown mt-1">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" data-bs-strategy="fixed" aria-expanded="false">
+                    Lainnya
+                </button>
+                <ul class="dropdown-menu shadow">
+                    <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
+                    <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
                 </ul>
             </div>
         <?php endif; ?>
