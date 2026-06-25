@@ -10,6 +10,8 @@ if (!isset($_SESSION['id_user'])) {
 }
 
 $id_user = (int)($_SESSION['id_user'] ?? 0);
+// Tambahkan baris di bawah ini untuk mengambil role_nama dari session
+$role_nama = $_SESSION['role_nama'] ?? 'Unit Pengirim';
 
 
 /* 1. GENERATE NOMOR AGENDA OTOMATIS */
@@ -166,7 +168,7 @@ input[type="file"]::file-selector-button {
                                 <div class="row g-3">
                                     <div class="col-md-4">
                                         <label class="form-label small fw-bold text-muted">Unit Pengirim</label>
-                                        <input type="text" class="form-control bg-light fw-bold" value="<?= htmlspecialchars($role_nama) ?>" readonly>
+                                        <input type="text" class="form-control bg-light fw-bold" value="<?= htmlspecialchars($role_nama ?? '') ?>" readonly>
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label small fw-bold text-muted">No. Agenda (Otomatis)</label>
