@@ -1,49 +1,30 @@
 <?php
-// 1. Load konfigurasi session, role (auth), dan koneksi database
-require_once "../config/auth_config.php"; 
+require_once "../config/session.php";
 require_once "../config/koneksi.php";
-
 date_default_timezone_set('Asia/Jakarta');
 
 /* ======================================================
    1. VALIDASI LOGIN & MULTI-JABATAN (Pimpinan & Admin)
 ====================================================== */
 if (!isset($_SESSION['status']) || $_SESSION['status'] !== "login") {
+    // Arahkan kembali jika belum login
     header("Location: ../auth/login_pimpinan.php?pesan=belum_login");
     exit;
 }
 
-$role_diizinkan = ['kakesdam_jaya', 'wakakesdam_jaya', 'kasi_tuud', 'spri_pimpinan', 'superadmin', 'admin'];
+// Ambil email dari session (Gunakan email karena user tersebar di 2 tempat login)
+$email_user = strtolower($_SESSION['email'] ?? ''); 
 
-if (!in_array($role, $role_diizinkan)) {
+// Daftar email yang diizinkan melakukan TTD
+$email_diizinkan = [
+    'kakesdamjaya@gmail.com',
+    'wakakesdamjaya@gmail.com',
+    'kasituud@gmail.com'
+];
+
+if (!in_array($email_user, $email_diizinkan)) {
     echo "<script>alert('Akses Ditolak! Hanya Kakesdam, Wakakesdam, dan Kasi TUUD yang berwenang.'); window.location.href='../transaksi/kelola_surat.php';</script>";
     exit;
-}
-
-/* ======================================================
-   2. PROSES AMBIL DATA SURAT DARI DATABASE
-====================================================== */
-// Ambil ID Surat dari URL parameter (?id=...)
-$id = isset($_GET['id']) ? mysqli_real_escape_string($koneksi, $_GET['id']) : '';
-
-$file_found = false;
-$is_ttd = false;
-$pdf_preview = '';
-
-if (!empty($id)) {
-    // Sesuaikan nama tabel (misal: surat_masuk) dan nama kolom (id_surat, file_pdf, status_ttd) dengan database Anda
-    $query = mysqli_query($koneksi, "SELECT * FROM surat_masuk WHERE id_surat = '$id'");
-    
-    if (mysqli_num_rows($query) > 0) {
-        $data = mysqli_fetch_assoc($query);
-        $file_found = true;
-        
-        // Cek apakah sudah ditandatangani sebelumnya (sesuaikan nama kolom status Anda)
-        $is_ttd = ($data['status_ttd'] == 'sudah') ? true : false; 
-        
-        // Path file PDF untuk di-render oleh PDF.js
-        $pdf_preview = "../upload/surat_masuk/" . $data['file_pdf']; 
-    }
 }
 ?>
 
