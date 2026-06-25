@@ -4,9 +4,40 @@ require_once "../config/session.php";
 require_once "../config/koneksi.php";
 date_default_timezone_set('Asia/Jakarta');
 
-// 2. Load Berkas Library FPDF & FPDI Secara Flat (Sesuai Struktur Hasil ls -l Anda)
+// 2. Load Core FPDF
 require_once __DIR__ . '/../libraries/fpdf/fpdf.php';
-require_once __DIR__ . '/../libraries/fpdi/src/Fpdi.php';
+
+// 3. PENCARI OTOMATIS FPDI (Pasti ketemu di folder mana pun tanpa error path lagi)
+$fpdi_dir = __DIR__ . '/../libraries/fpdi/';
+$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($fpdi_dir));
+foreach ($iterator as $file) {
+    if ($file->isFile() && $file->getFilename() === 'Autoload.php') {
+        require_once $file->getPathname();
+        break;
+    }
+}
+
+// Daftarkan jika autoloader bawaan FPDI v2 ditemukan
+if (class_exists('\setasign\Fpdi\Autoload')) {
+    \setasign\Fpdi\Autoload::register();
+} else {
+    // Jika versi lama, cari file fpdi.php utama secara otomatis
+    foreach ($iterator as $file) {
+        if ($file->isFile() && strtolower($file->getFilename()) === 'fpdi.php') {
+            require_once $file->getPathname();
+            break;
+        }
+    }
+}
+
+// Jembatan pengaman class agar mendukung versi baru maupun lama
+if (!class_exists('FpdiBridge')) {
+    if (class_exists('\setasign\Fpdi\Fpdi')) {
+        class FpdiBridge extends \setasign\Fpdi\Fpdi {}
+    } else if (class_exists('FPDI')) {
+        class FpdiBridge extends FPDI {}
+    }
+}
 
 // Pastikan hanya diakses melalui pengiriman form POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
