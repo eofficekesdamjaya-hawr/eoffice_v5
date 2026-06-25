@@ -409,22 +409,22 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
                 </tr>
 
                 <div class="modal fade" id="verifModal<?= $row['id_surat'] ?>" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header bg-warning text-dark">
-                                <h5 class="modal-title fw-bold"><i class="bi bi-shield-check"></i> Verifikasi Surat Berkas</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p>Apakah Anda ingin memverifikasi draf surat dengan nomor agenda <strong><?= htmlspecialchars($row['no_agenda'] ?? '-') ?></strong>?</p>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                                <a href="../surat_keluar/proses_verifikasi.php?id=<?= $row['id_surat'] ?>&status=diterima" class="btn btn-success">Terima & Setujui</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title fw-bold"><i class="bi bi-shield-check"></i> Verifikasi Surat Berkas</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda ingin memverifikasi draf surat dengan nomor agenda <strong><?= htmlspecialchars($row['no_agenda'] ?? '-') ?></strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <a href="../transifikasi/proses_verifikasi_surat.php?id=<?= $row['id_surat'] ?>&status=diterima" class="btn btn-success">Terima & Setujui</a>
+            </div>
+        </div>
+    </div>
+</div>
             <?php
                 endwhile;
             else:
