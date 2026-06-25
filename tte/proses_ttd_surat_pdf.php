@@ -5,7 +5,7 @@ require_once "../config/koneksi.php";
 date_default_timezone_set('Asia/Jakarta');
 
 require_once __DIR__ . '/../libraries/fpdf/fpdf.php';
-require_once __DIR__ . '/../libraries/fpdi/autoload.php';
+require_once __DIR__ . '/../libraries/fpdi/src/Fpdi.php';
 
 use setasign\Fpdi\Fpdi;
 
