@@ -34,7 +34,8 @@ $allowed_emails = [
 ];
 
 // --- PROTEKSI OTORITAS HALAMAN ---
-$is_ruangan = ($tipe_akses === 'ruangan' || $user_role === 'ruangan' || in_array($nama_user, $ruanganMap));
+// PERBAIKAN: Mengubah $user_role menjadi $tipe_akses karena $user_role tidak didefinisikan di atas
+$is_ruangan = ($tipe_akses === 'ruangan' || in_array($nama_user, $ruanganMap));
 
 if (!in_array($user_email, $allowed_emails) && !$is_ruangan) {
     echo "<script>alert('Akses Ditolak! Anda tidak memiliki otoritas pengendali surat masuk.'); window.location.href='../dashboard/dashboard_admin.php';</script>";
@@ -113,13 +114,13 @@ function renderBadgeAlurMasuk($status) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <style>
         .table th { vertical-align: middle; text-align: center; font-size: 0.78rem; text-transform: uppercase; background-color: #0f172a !important; color: #fff; border: 1px solid #1e293b; }
         .table td { font-size: 0.85rem; vertical-align: top; color: #1e293b; }
         .section-divider { border-left: 4px solid #16a34a; padding-left: 10px; margin-bottom: 15px; font-weight: bold; }
         .section-divider-old { border-left: 4px solid #64748b; padding-left: 10px; margin-bottom: 15px; font-weight: bold; }
         
-        /* SOLUSI OVERFLOW AGAR DROPDOWN TIDAK SEMBUNYI */
         .table-responsive { overflow: visible !important; }
         .card { overflow: visible !important; }
         .card-body { overflow: visible !important; }
@@ -214,7 +215,7 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
                     <td class="text-center"><?= !empty($row['tanggal_surat']) ? date('d-m-Y', strtotime($row['tanggal_surat'])) : '-' ?></td>
                     <td class="text-center"><?= !empty($row['tanggal_diterima']) ? date('d-m-Y', strtotime($row['tanggal_diterima'])) : '-' ?></td>
                     <td>
-                        <span class="badge bg-secondary text-xs"><?= htmlspecialchars($row['shapes_surat'] ?? ($row['shapes_surat'] ?? 'Fisik')) ?></span><br>
+                        <span class="badge bg-secondary text-xs"><?= htmlspecialchars($row['shapes_surat'] ?? 'Fisik') ?></span><br>
                         <small class="text-xs text-secondary"><?= htmlspecialchars($row['jenis_surat'] ?? '-') ?></small>
                     </td>
                     <td>
@@ -369,6 +370,5 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
 <?php 
 }
 ?>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
