@@ -120,6 +120,9 @@ function renderBadgeAlurMasuk($status) {
         .section-divider { border-left: 4px solid #16a34a; padding-left: 10px; margin-bottom: 15px; font-weight: bold; }
         .section-divider-old { border-left: 4px solid #64748b; padding-left: 10px; margin-bottom: 15px; font-weight: bold; }
         .dropdown-menu { z-index: 1050 !important; }
+        .table-responsive {
+    overflow: visible !important;
+}
     </style>
 </head>
 <body class="bg-light text-dark">
@@ -248,9 +251,9 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
             <a href="hapus_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas Surat Masuk?')"><i class="bi bi-trash"></i> Hapus</a>
             
             <div class="dropdown">
-                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropGrup1_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
-                    Menu Lainnya
-                </button>
+<button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropGrup1_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" aria-expanded="false">
+    Menu Lainnya
+</button>
                 <ul class="dropdown-menu shadow" aria-labelledby="dropGrup1_<?= $row['id_surat'] ?>">
                     <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
                     <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
@@ -366,7 +369,6 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
 <?php 
 }
 ?>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
