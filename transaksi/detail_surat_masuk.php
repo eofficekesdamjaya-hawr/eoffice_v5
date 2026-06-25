@@ -197,29 +197,32 @@ require_once '../dashboard/sidebar_admin.php';
         </div>
 
         <div class="col-lg-5">
-            <div class="card shadow-sm border-0 sticky-top" style="top: 20px; z-index: 10;">
-                <div class="card-header bg-danger text-white fw-bold py-2 text-xs d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-file-pdf-fill me-1"></i> Dokumen Lampiran Digital (PDF)</span>
-                    <?php if (!empty($row['file_surat'])): ?>
-                        <a href="../uploads/surat_masuk/<?= urlencode($row['file_surat']) ?>" target="_blank" class="btn btn-xs btn-light py-0 px-2 fw-bold text-danger text-xs">Buka Tab Baru</a>
-                    <?php endif; ?>
-                </div>
-                <div class="card-body p-0 bg-dark" style="height: 680px;">
-                    <?php 
-                    $file_path = "../uploads/surat_masuk/" . ($row['file_surat'] ?? '');
-                    if (!empty($row['file_surat']) && file_exists($file_path)): 
-                    ?>
-                        <iframe src="../uploads/surat_masuk/<?= urlencode($row['file_surat']) ?>#toolbar=1" width="100%" height="100%" style="border: none;"></iframe>
-                    <?php else: ?>
-                        <div class="d-flex flex-column justify-content-center align-items-center text-white h-100 p-4 text-center">
-                            <i class="bi bi-file-earmark-pdf text-muted mb-2" style="font-size: 3rem;"></i>
-                            <span class="text-xs text-muted mb-1">Berkas fisik master PDF tidak ditemukan di server.</span>
-                            <small class="text-dark-50 font-monospace text-xs" style="font-size:0.75rem;">Nama Berkas target: <?= htmlspecialchars($row['file_surat'] ?? 'Kosong') ?></small>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
+    <div class="card shadow-sm border-0 sticky-top" style="top: 20px; z-index: 10;">
+        <div class="card-header bg-danger text-white fw-bold py-2 text-xs d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-file-pdf-fill me-1"></i> Dokumen Lampiran Digital (PDF)</span>
+            <?php if (!empty($row['file_surat'])): ?>
+                <a href="../uploads/surat_masuk/<?= urlencode($row['file_surat']) ?>" target="_blank" class="btn btn-xs btn-light py-0 px-2 fw-bold text-danger text-xs">Buka Tab Baru</a>
+            <?php endif; ?>
         </div>
+        <div class="card-body p-0 bg-dark" style="height: 680px;">
+            <?php if (!empty($row['file_surat'])): ?>
+                <object data="../uploads/surat_masuk/<?= urlencode($row['file_surat']) ?>#toolbar=1" type="application/pdf" width="100%" height="100%">
+                    <iframe src="../uploads/surat_masuk/<?= urlencode($row['file_surat']) ?>#toolbar=1" width="100%" height="100%" style="border: none;">
+                        <div class="d-flex flex-column justify-content-center align-items-center text-white h-100 p-4 text-center">
+                            <i class="bi bi-exclamation-triangle text-warning mb-2" style="font-size: 2rem;"></i>
+                            <span class="text-xs">Browser Anda tidak mendukung pratinjau PDF. Silakan klik "Buka Tab Baru".</span>
+                        </div>
+                    </iframe>
+                </object>
+            <?php else: ?>
+                <div class="d-flex flex-column justify-content-center align-items-center text-white h-100 p-4 text-center">
+                    <i class="bi bi-file-earmark-pdf text-muted mb-2" style="font-size: 3rem;"></i>
+                    <span class="text-xs text-muted">Belum ada berkas PDF yang diunggah untuk surat ini.</span>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
     </div>
 </div>
 
