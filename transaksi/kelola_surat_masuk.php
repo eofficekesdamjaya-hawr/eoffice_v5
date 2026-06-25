@@ -1,6 +1,5 @@
 <?php
 require_once "../config/session.php";
-
 require_once "../config/koneksi.php";
 require_once "../config/auth_config.php"; 
 require_once "../config/hak_akses.php";   
@@ -11,8 +10,11 @@ $nama_user    = $_SESSION['nama_user'] ?? ($_SESSION['nama'] ?? 'Personel Ruanga
 $tipe_akses   = $_SESSION['tipe_akses'] ?? ''; 
 $role_ruangan = strtolower(trim($nama_user));
 
-// Proteksi Otoritas Halaman (Hanya yang berhak yang bisa mengendalikan)
-if (!in_array($user_role, ['superadmin', 'staff_inti', 'pimpinan', 'ruangan']) && $tipe_akses !== 'ruangan') {
+// --- PERBAIKAN PROTEKSI OTORITAS HALAMAN ---
+// Menambahkan kakesdam_jaya, wakakesdam_jaya, spri_pimpinan, setum, dan admin ke dalam whitelist akses
+$allowed_roles = ['superadmin', 'setum', 'admin', 'kasi_tuud', 'kakesdam_jaya', 'wakakesdam_jaya', 'spri_pimpinan', 'ruangan'];
+
+if (!in_array($user_role, $allowed_roles) && $tipe_akses !== 'ruangan') {
     echo "<script>alert('Akses Ditolak! Anda tidak memiliki otoritas pengendali surat masuk.'); window.location.href='../dashboard/dashboard_admin.php';</script>";
     exit();
 }
@@ -52,12 +54,14 @@ if ($user_role === 'ruangan' || $tipe_akses === 'ruangan') {
     )";
 }
 
-// LOGIKA OTOMATIS FILTER UNTUK PIMPINAN (Kakesdam, Wakakesdam, Spri) Jika tanpa filter khusus
-if ($user_role === 'pimpinan' && empty($filter)) {
+// --- PERBAIKAN LOGIKA FILTER PIMPINAN ---
+// Menyelaraskan role pimpinan sesuai dengan file hak_akses.php
+$pimpinan_roles = ['kakesdam_jaya', 'wakakesdam_jaya', 'spri_pimpinan'];
+if (in_array($user_role, $pimpinan_roles) && empty($filter)) {
     $additional_query .= " AND (sm.status_proses = 'Proses Disposisi' OR sm.status_proses = 'Pending' OR sm.status_proses = 'Baru')";
 }
 
-// QUERY DATA SURAT MASUK (SINKRON DENGAN STRUKTUR ID_SURAT & TANGGAL_INPUT)
+// QUERY DATA SURAT MASUK
 $sqlHariIni = "SELECT sm.*, u.nama AS nama_pembuat 
                FROM surat_masuk sm 
                LEFT JOIN disposisi_surat ds ON sm.id_surat = ds.id_surat
@@ -131,9 +135,9 @@ if ($user_role === 'ruangan' || $tipe_akses === 'ruangan') {
                     <?php endif; ?>
                 </div>
                 <div>
-                    <?php if (in_array($user_role, ['superadmin', 'staff_inti'])): ?>
-                        <a href="../surat_masuk/tambah_surat_masuk.php" class="btn btn-success fw-bold shadow-sm"><i class="bi bi-plus-lg"></i> Tambah Surat Masuk</a>
-                    <?php endif; ?>
+                    <?php if (in_array($user_role, ['superadmin', 'setum', 'admin', 'kasi_tuud'])): ?>
+    <a href="../surat_masuk/tambah_surat_masuk.php" class="btn btn-success fw-bold shadow-sm"><i class="bi bi-plus-lg"></i> Tambah Surat Masuk</a>
+<?php endif; ?>
                 </div>
             </div>
 
