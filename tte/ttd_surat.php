@@ -36,19 +36,20 @@ if (!$resultSurat) {
 $status_proses = trim(strtolower($resultSurat['status_proses'] ?? ''));
 $is_ttd        = ($status_proses === 'selesai') ? true : false;
 
-// Ambil data email dari session (sesuaikan key session email di sistem Anda jika berbeda)
+// Ambil data email dari session
 $user_email = $_SESSION['email'] ?? ''; 
 
 // Logika penentuan label dan gambar berdasarkan email yang login
 if ($user_email === 'wakakesdamjaya2026@gmail.com') {
     $label_title = "TTD Asli Wakakesdam Jaya (Preview)";
     $label_desc  = "Preview tanda tangan resmi Wakakesdam.";
-    $img_preview = "../assets/ttd_wakakesdam_asli.png"; // Pastikan file gambar ini ada
+    $img_preview = "../assets/ttd_wakakesdam_asli.png"; 
+    $text_badge  = "Penempatan TTD Wakakesdam";
 } else {
-    // Default jika Kakesdam atau Superadmin
     $label_title = "TTD Asli Kakesdam Jaya (Preview)";
     $label_desc  = "Preview tanda tangan resmi Komando.";
     $img_preview = "../assets/ttd_kakesdam_asli.png";
+    $text_badge  = "Penempatan TTD Kakesdam";
 }
 
 $nama_file     = $resultSurat['file_surat'] ?? '';
@@ -56,7 +57,6 @@ $file_found    = false;
 $pdf_preview   = '';
 
 if (!empty($nama_file)) {
-    // Jalur penyimpanan draf PDF di sistem Anda
     $path_file = "../uploads/surat_keluar/" . $nama_file;
     if (file_exists($path_file)) {
         $file_found  = true;
@@ -81,20 +81,6 @@ if (!empty($nama_file)) {
         border-radius: 18px;
         overflow: hidden;
     }
-    .card-header-custom {
-        background: linear-gradient(135deg, #198754, #146c43);
-        color: #fff;
-    }
-    .meta-label {
-        font-size: 11px;
-        text-transform: uppercase;
-        font-weight: 700;
-        opacity: .8;
-    }
-    .meta-value {
-        font-size: 14px;
-        font-weight: 600;
-    }
     #signature-pad {
         width: 100%;
         height: 220px;
@@ -106,17 +92,10 @@ if (!empty($nama_file)) {
     .btn {
         border-radius: 10px;
     }
-    .signature-status {
-        border-radius: 14px;
-    }
     .loading-spinner {
         display: none;
     }
-    .info-list li {
-        margin-bottom: 10px;
-    }
 
-    /* CSS FIXED: SINKRONISASI KANVAS DENGAN AREA DRAG */
     .document-container-wrapper {
         position: relative;
         background: #6c757d;
@@ -154,7 +133,7 @@ if (!empty($nama_file)) {
         display: none;
     }
     #drag-ttd::after {
-        content: "Penempatan TTD";
+        content: "<?= $text_badge ?>";
         position: absolute;
         top: -22px;
         left: 0;
@@ -333,15 +312,15 @@ if (!empty($nama_file)) {
                             <canvas id="signature-pad"></canvas>
                         </div>
 
- <div class="card border-success shadow-sm mb-3"> 
-    <div class="card-header bg-success text-white py-2"> 
-        <i class="bi bi-pen-fill me-1"></i> <?= $label_title ?> 
-    </div> 
-    <div class="card-body text-center"> 
-        <img src="<?= $img_preview ?>" alt="Preview TTD" style="max-width:100%; height:90px; object-fit:contain;"> 
-        <small class="text-muted d-block mt-2"><?= $label_desc ?></small> 
-    </div> 
-</div>
+                        <div class="card border-success shadow-sm mb-3"> 
+                            <div class="card-header bg-success text-white py-2"> 
+                                <i class="bi bi-pen-fill me-1"></i> <?= $label_title ?> 
+                            </div> 
+                            <div class="card-body text-center"> 
+                                <img src="<?= $img_preview ?>" alt="Preview TTD" style="max-width:100%; height:90px; object-fit:contain;"> 
+                                <small class="text-muted d-block mt-2"><?= $label_desc ?></small> 
+                            </div> 
+                        </div>
 
                         <div class="d-grid gap-2 mb-3">
                             <button type="button" class="btn btn-outline-danger btn-sm" id="clear-signature">
@@ -376,6 +355,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 
 const canvasPad = document.getElementById('signature-pad');
 let signaturePad;
+let isPdfRendered = false; // Flag penanda PDF selesai dimuat
 
 if (canvasPad) {
     signaturePad = new SignaturePad(canvasPad, {
@@ -410,13 +390,17 @@ if (canvasPad) {
             alert('Silakan coret tanda tangan terlebih dahulu!');
             return false;
         }
+        if (!isPdfRendered) {
+            alert('Dokumen PDF belum selesai dimuat, mohon tunggu sebentar.');
+            return false;
+        }
 
         const previewCanvas = document.getElementById('ttd-preview-canvas');
         const pCtx = previewCanvas.getContext('2d');
 
         const img = new Image();
         img.src = signaturePad.toDataURL('image/png');
-img.onload = function() {
+        img.onload = function() {
             previewCanvas.width = 150;
             previewCanvas.height = 60;
             pCtx.clearRect(0, 0, 150, 60);
@@ -426,16 +410,13 @@ img.onload = function() {
             document.getElementById('drag-stempel').style.display = 'block';
             document.getElementById('drag-qr').style.display = 'block';
 
-            // Mengubah teks pseudo-element ::after pada kotak drag secara dinamis dan aman
-            const ttdText = '<?= ($user_email === "wakakesdamjaya2026@gmail.com") ? "Penempatan TTD Wakakesdam" : "Penempatan TTD Kakesdam" ?>';
-            document.styleSheets[0].insertRule(`#drag-ttd::after { content: "${ttdText}" !important; }`, document.styleSheets[0].cssRules.length);
-
             document.getElementById('btnSubmit').disabled = false;
 
             const container = document.getElementById('pdf-container');
-            initPosition('drag-ttd', container.clientWidth / 2 - 40, container.clientHeight - 180);
-            initPosition('drag-stempel', container.clientWidth / 2 - 120, container.clientHeight - 200);
-            initPosition('drag-qr', container.clientWidth / 2 - 140, container.clientHeight - 160);
+            // Menempatkan komponen otomatis di area bawah dokumen dekat posisi TTD resmi
+            initPosition('drag-ttd', container.clientWidth - 200, container.clientHeight - 160);
+            initPosition('drag-stempel', container.clientWidth - 320, container.clientHeight - 200);
+            initPosition('drag-qr', 40, container.clientHeight - 140);
         };
     });
 }
@@ -480,6 +461,7 @@ if (pdfUrl && pdfUrl.trim() !== '') {
     })
     .then(function() {
         console.log('PDF berhasil dirender');
+        isPdfRendered = true; // Set flag aktif setelah render selesai nyata
     })
     .catch(function(error) {
         console.error('Gagal render PDF:', error);
