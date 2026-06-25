@@ -252,10 +252,15 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
                                 <a href="hapus_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas Surat Masuk?')"><i class="bi bi-trash"></i> Hapus</a>
                                 
                                 <div class="dropdown">
-<button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropGrup1_masuk_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" aria-expanded="false">
-    Menu Lainnya
-</button>
-<ul class="dropdown-menu shadow" aria-labelledby="dropGrup1_masuk_<?= $row['id_surat'] ?>">
+<div class="dropdown">
+    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Menu Lainnya
+    </button>
+    <ul class="dropdown-menu shadow">
+        <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
+        <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
+    </ul>
+</div>
                                     <ul class="dropdown-menu shadow" aria-labelledby="dropGrup1_<?= $row['id_surat'] ?>">
                                         <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
                                         <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
