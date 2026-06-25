@@ -249,13 +249,6 @@ if ($user_role === 'ruangan' || $user_role === 'stranger') {
 </div>
 
 
-
-
-
-
-
-
-
 <?php
 // DEKLARASI FUNGSI KONTEN UTAMA PRO VERSION (YANG SUDAH DIPERBAIKI)
 function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
@@ -411,7 +404,7 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
                         <div class="modal fade" id="verifModal<?= $row['id_surat'] ?>" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content">
-                                    <form action="../transifikasi/proses_verifikasi_surat.php" method="GET">
+                                    <form action="../transifikasi/proses_verifikasi_surat.php" method="POST">
                                         <input type="hidden" name="id" value="<?= $row['id_surat'] ?>">
                                         
                                         <div class="modal-header bg-warning text-dark">
@@ -426,13 +419,13 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
                                                 <label for="statusSelect<?= $row['id_surat'] ?>" class="form-label fw-bold text-secondary">Pilih Status Berkas:</label>
                                                 <select class="form-select" id="statusSelect<?= $row['id_surat'] ?>" name="status" required>
                                                     <option value="" disabled selected>-- Pilih Status --</option>
-                                                    <option value="diterima">✅ Diterima</option>
-                                                    <option value="ditolak">❌ Ditolak</option>
-                                                    <option value="proses disposisi">📝 Proses Disposisi</option>
-                                                    <option value="sudah didisposisikan">📌 Sudah Didisposisikan</option>
-                                                    <option value="dalam proses">⚙️ Dalam Proses</option>
-                                                    <option value="ditindaklanjuti">📤 Ditindaklanjuti/Dijawab</option>
-                                                    <option value="selesai">📂 Selesai & Diarsipkan</option>
+                                                    <option value="Di terima">✅ Diterima</option>
+                                                    <option value="Ditolak">❌ Ditolak</option>
+                                                    <option value="Proses Disposisi">📝 Proses Disposisi</option>
+                                                    <option value="Sudah Didisposisikan">📌 Sudah Didisposisikan</option>
+                                                    <option value="Dalam Proses">⚙️ Dalam Proses</option>
+                                                    <option value="Ditindaklanjuti">📤 Ditindaklanjuti/Dijawab</option>
+                                                    <option value="Selesai">📂 Selesai & Diarsipkan</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -446,6 +439,10 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
                             </div>
                         </div>
                     </td>
+                    
+
+
+
                 </tr>
             <?php
                 endwhile;
