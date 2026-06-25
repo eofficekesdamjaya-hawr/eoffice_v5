@@ -77,20 +77,22 @@ $namaFileBaru = $infoFile['filename'] . "_ttd.pdf";
 $pathHasil = $folderUpload . $namaFileBaru;
 
 // --------------------------
-// 4. Inisialisasi FPDI
+// 4. Inisialisasi FPDI (Menggunakan yang ada di libraries/fpdf)
 // --------------------------
-// Gunakan FPDI dari folder libraries yang tersedia
-require_once "../libraries/fpdi/src/src/Fpdi.php";
+require_once "../libraries/fpdf/Fpdi.php";
 
-use setasign\Fpdi\Fpdi;
-
+// Gunakan class FPDI tanpa namespace
 $pdf = new Fpdi();
-$pdf->setSourceFile($pathAsli);
+
+// Ambil jumlah halaman
+$jumlahHalaman = $pdf->setSourceFile($pathAsli);
+if ($jumlahHalaman < 1) {
+    echo "<script>alert('File PDF kosong atau rusak!'); window.history.back();</script>";
+    exit;
+}
 
 // Ambil halaman terakhir saja
-$jumlahHalaman = $pdf->setSourceFile($pathAsli);
-$nomorHalaman  = $jumlahHalaman;
-
+$nomorHalaman = $jumlahHalaman;
 $templateId = $pdf->importPage($nomorHalaman);
 $ukuranHalaman = $pdf->getTemplateSize($templateId);
 
@@ -106,7 +108,9 @@ $skala = $ukuranHalaman['width'] / $canvasW;
 // --------------------------
 // Buat folder sementara untuk menyimpan gambar tanda tangan
 $folderSementara = "../uploads/sementara/";
-if (!file_exists($folderSementara)) mkdir($folderSementara, 0755, true);
+if (!file_exists($folderSementara)) {
+    mkdir($folderSementara, 0755, true);
+}
 $fileTtd = $folderSementara . "ttd_" . time() . ".png";
 
 // Konversi base64 ke file gambar
@@ -150,7 +154,7 @@ $updateQuery = "UPDATE surat_keluar
 $stmtUpdate = $conn->prepare($updateQuery);
 
 // Tentukan nama penandatangan berdasarkan email
-if ($_SESSION['email'] === 'wakakesdamjaya2026@gmail.com') {
+if (($_SESSION['email'] ?? '') === 'wakakesdamjaya2026@gmail.com') {
     $ttdOleh = "Wakil Komandan Kesdam Jaya";
 } else {
     $ttdOleh = "Komandan Kesdam Jaya";
