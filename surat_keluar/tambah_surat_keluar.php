@@ -12,15 +12,16 @@ if (!isset($_SESSION['id_user'])) {
 // 1. Ambil ID dari session
 $id_user = (int)($_SESSION['id_user'] ?? 0);
 
-// 2. Ambil data satuan spesifik untuk user yang sedang login
-// Kita gunakan 'id' karena itulah nama primary key di tabel users Anda
-$queryUser = $conn->prepare("SELECT satuan FROM users WHERE id = ?"); 
-$queryUser->bind_param("i", $id_user);
-$queryUser->execute();
-$resultUser = $queryUser->get_result()->fetch_assoc();
+// 2. AMBIL DATA SATUAN LANGSUNG DARI TABEL 'users'
+// Kita gunakan SELECT satuan karena kolom itu ada di database Anda
+$stmtUser = $conn->prepare("SELECT satuan FROM users WHERE id = ?");
+$stmtUser->bind_param("i", $id_user);
+$stmtUser->execute();
+$dataUser = $stmtUser->get_result()->fetch_assoc();
 
 // 3. Masukkan ke variabel $role_nama
-$role_nama = $_SESSION['nama_role'] ?? 'Unit Pengirim';
+// Jika data di database kosong, tampilkan default 'Unit Pengirim'
+$role_nama = $dataUser['satuan'] ?? 'Unit Pengirim';
 
 
 /* 1. GENERATE NOMOR AGENDA OTOMATIS */
