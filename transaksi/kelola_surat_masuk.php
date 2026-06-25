@@ -34,7 +34,6 @@ $allowed_emails = [
 ];
 
 // --- PROTEKSI OTORITAS HALAMAN ---
-// Mengizinkan jika user termasuk dalam daftar email utama ATAU tipe aksesnya/ruangannya terdaftar di ruanganMap
 $is_ruangan = ($tipe_akses === 'ruangan' || $user_role === 'ruangan' || in_array($nama_user, $ruanganMap));
 
 if (!in_array($user_email, $allowed_emails) && !$is_ruangan) {
@@ -119,10 +118,11 @@ function renderBadgeAlurMasuk($status) {
         .table td { font-size: 0.85rem; vertical-align: top; color: #1e293b; }
         .section-divider { border-left: 4px solid #16a34a; padding-left: 10px; margin-bottom: 15px; font-weight: bold; }
         .section-divider-old { border-left: 4px solid #64748b; padding-left: 10px; margin-bottom: 15px; font-weight: bold; }
-        .dropdown-menu { z-index: 1050 !important; }
-        .table-responsive {
-    overflow: visible !important;
-}
+        
+        /* SOLUSI OVERFLOW AGAR DROPDOWN TIDAK SEMBUNYI */
+        .table-responsive { overflow: visible !important; }
+        .card { overflow: visible !important; }
+        .card-body { overflow: visible !important; }
     </style>
 </head>
 <body class="bg-light text-dark">
@@ -214,7 +214,7 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
                     <td class="text-center"><?= !empty($row['tanggal_surat']) ? date('d-m-Y', strtotime($row['tanggal_surat'])) : '-' ?></td>
                     <td class="text-center"><?= !empty($row['tanggal_diterima']) ? date('d-m-Y', strtotime($row['tanggal_diterima'])) : '-' ?></td>
                     <td>
-                        <span class="badge bg-secondary text-xs"><?= htmlspecialchars($row['shapes_surat'] ?? ($row['bentuk_surat'] ?? 'Fisik')) ?></span><br>
+                        <span class="badge bg-secondary text-xs"><?= htmlspecialchars($row['shapes_surat'] ?? ($row['shapes_surat'] ?? 'Fisik')) ?></span><br>
                         <small class="text-xs text-secondary"><?= htmlspecialchars($row['jenis_surat'] ?? '-') ?></small>
                     </td>
                     <td>
@@ -239,120 +239,120 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
                     
                     <td class="text-center"><?= renderBadgeAlurMasuk($row['status_proses'] ?? 'Dalam Proses') ?></td>
                     
-<td>
-    <div class="d-flex flex-column gap-1">
-        
-        <?php 
-        // GRUP 1: Pimpinan Utama & Eksekutif Komando
-        if (in_array($user_email, ['superadmin@gmail.com', 'kakesdamjaya2026@gmail.com', 'wakakesdamjaya2026@gmail.com', 'kasituud2026@gmail.com'])): 
-        ?>
-            <button type="button" class="btn btn-warning btn-sm fw-bold shadow-sm text-xs" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
-            <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold text-xs"><i class="bi bi-shuffle"></i> Disposisi</a>
-            <a href="hapus_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas Surat Masuk?')"><i class="bi bi-trash"></i> Hapus</a>
-            
-            <div class="dropdown">
-<button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropGrup1_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" aria-expanded="false">
-    Menu Lainnya
-</button>
-                <ul class="dropdown-menu shadow" aria-labelledby="dropGrup1_<?= $row['id_surat'] ?>">
-                    <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
-                    <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
-                </ul>
-            </div>
+                    <td>
+                        <div class="d-flex flex-column gap-1">
+                            
+                            <?php 
+                            // GRUP 1: Pimpinan Utama & Eksekutif Komando
+                            if (in_array($user_email, ['superadmin@gmail.com', 'kakesdamjaya2026@gmail.com', 'wakakesdamjaya2026@gmail.com', 'kasituud2026@gmail.com'])): 
+                            ?>
+                                <button type="button" class="btn btn-warning btn-sm fw-bold shadow-sm text-xs" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
+                                <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold text-xs"><i class="bi bi-shuffle"></i> Disposisi</a>
+                                <a href="hapus_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas Surat Masuk?')"><i class="bi bi-trash"></i> Hapus</a>
+                                
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropGrup1_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Menu Lainnya
+                                    </button>
+                                    <ul class="dropdown-menu shadow" aria-labelledby="dropGrup1_<?= $row['id_surat'] ?>">
+                                        <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
+                                        <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
+                                    </ul>
+                                </div>
 
-        <?php 
-        // GRUP 2: Kesekretariatan / Staf Admin (Setum & Admin)
-        elseif (in_array($user_email, ['setum@gmail.com', 'admin@gmail.com'])): 
-        ?>
-            <button type="button" class="btn btn-warning btn-sm fw-bold text-xs" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
-            <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold text-xs"><i class="bi bi-shuffle"></i> Disposisi</a>
-            
-            <?php if ($user_email === 'admin@gmail.com'): ?>
-                <a href="hapus_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
-            <?php endif; ?>
+                            <?php 
+                            // GRUP 2: Kesekretariatan / Staf Admin (Setum & Admin)
+                            elseif (in_array($user_email, ['setum@gmail.com', 'admin@gmail.com'])): 
+                            ?>
+                                <button type="button" class="btn btn-warning btn-sm fw-bold text-xs" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
+                                <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold text-xs"><i class="bi bi-shuffle"></i> Disposisi</a>
+                                
+                                <?php if ($user_email === 'admin@gmail.com'): ?>
+                                    <a href="hapus_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
+                                <?php endif; ?>
 
-            <div class="dropdown">
-                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropGrup2_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
-                    Menu Lainnya
-                </button>
-                <ul class="dropdown-menu shadow" aria-labelledby="dropGrup2_<?= $row['id_surat'] ?>">
-                    <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
-                    <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
-                </ul>
-            </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropGrup2_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Menu Lainnya
+                                    </button>
+                                    <ul class="dropdown-menu shadow" aria-labelledby="dropGrup2_<?= $row['id_surat'] ?>">
+                                        <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
+                                        <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
+                                    </ul>
+                                </div>
 
-        <?php 
-        // GRUP 3: Spri Pimpinan (Akses Terbatas)
-        elseif ($user_email === 'spripimpinan2026@gmail.com'): 
-        ?>
-            <button type="button" class="btn btn-warning btn-sm fw-bold text-xs" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
-            <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold text-xs"><i class="bi bi-shuffle"></i> Disposisi</a>
-            
-            <div class="dropdown">
-                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropGrup3_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
-                    Menu Lainnya
-                </button>
-                <ul class="dropdown-menu shadow" aria-labelledby="dropGrup3_<?= $row['id_surat'] ?>">
-                    <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
-                    <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
-                </ul>
-            </div>
+                            <?php 
+                            // GRUP 3: Spri Pimpinan (Akses Terbatas)
+                            elseif ($user_email === 'spripimpinan2026@gmail.com'): 
+                            ?>
+                                <button type="button" class="btn btn-warning btn-sm fw-bold text-xs" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
+                                <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold text-xs"><i class="bi bi-shuffle"></i> Disposisi</a>
+                                
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropGrup3_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Menu Lainnya
+                                    </button>
+                                    <ul class="dropdown-menu shadow" aria-labelledby="dropGrup3_<?= $row['id_surat'] ?>">
+                                        <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
+                                        <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
+                                    </ul>
+                                </div>
 
-        <?php 
-        // GRUP 4: Ruangan / Internal Kesdam Map
-        else: 
-        ?>
-            <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm fw-bold text-xs"><i class="bi bi-reply-all-fill"></i> Jawab / Revisi</a>
-            
-            <div class="dropdown mt-1">
-                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropGrup4_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" data-bs-boundary="viewport" aria-expanded="false">
-                    Lainnya
-                </button>
-                <ul class="dropdown-menu shadow" aria-labelledby="dropGrup4_<?= $row['id_surat'] ?>">
-                    <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
-                    <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
-                </ul>
-            </div>
-        <?php endif; ?>
+                            <?php 
+                            // GRUP 4: Ruangan / Internal Kesdam Map
+                            else: 
+                            ?>
+                                <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm fw-bold text-xs"><i class="bi bi-reply-all-fill"></i> Jawab / Revisi</a>
+                                
+                                <div class="dropdown mt-1">
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" id="dropGrup4_<?= $row['id_surat'] ?>" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Lainnya
+                                    </button>
+                                    <ul class="dropdown-menu shadow" aria-labelledby="dropGrup4_<?= $row['id_surat'] ?>">
+                                        <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
+                                        <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
+                                    </ul>
+                                </div>
+                            <?php endif; ?>
 
-    </div>
+                        </div>
 
-    <div class="modal fade" id="verifModalMasuk<?= $row['id_surat'] ?>" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <form action="../transifikasi/proses_verifikasi_surat.php" method="POST" class="modal-content">
-                <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title fw-bold fs-6"><i class="bi bi-shield-check"></i> Lembar Verifikasi No: <?= htmlspecialchars($row['no_agenda'] ?? '-') ?></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-start">
-                    <input type="hidden" name="id_surat" value="<?= $row['id_surat'] ?>">
-                    <input type="hidden" name="jenis_tabel" value="masuk">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold text-xs mb-1">Status Verifikasi Berkas Masuk:</label>
-                        <select class="form-select border-primary text-xs" name="status_proses" required>
-                            <option value="Diterima" <?= ($row['status_proses'] ?? '') == 'Diterima' ? 'selected':'' ?>>✅ Diterima</option>
-                            <option value="Ditolak" <?= ($row['status_proses'] ?? '') == 'Ditolak' ? 'selected':'' ?>>❌ Ditolak</option>
-                            <option value="Proses Disposisi" <?= ($row['status_proses'] ?? '') == 'Proses Disposisi' ? 'selected':'' ?>>📝 Proses Disposisi</option>
-                            <option value="Sudah Didisposisikan" <?= ($row['status_proses'] ?? '') == 'Sudah Didisposisikan' ? 'selected':'' ?>>📌 Sudah Didisposisikan</option>
-                            <option value="Dalam Proses" <?= ($row['status_proses'] ?? '') == 'Dalam Proses' ? 'selected':'' ?>>⚙️ Dalam Proses</option>
-                            <option value="Ditindaklanjuti/Dijawab" <?= ($row['status_proses'] ?? '') == 'Ditindaklanjuti/Dijawab' ? 'selected':'' ?>>📤 Ditindaklanjuti/Dijawab</option>
-                            <option value="Selesai & Diarsipkan" <?= ($row['status_proses'] ?? '') == 'Selesai & Diarsipkan' ? 'selected':'' ?>>📂 Selesai & Diarsipkan</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold text-xs mb-1">Catatan Verifikator:</label>
-                        <textarea class="form-control text-xs" name="catatan_verif" rows="3" placeholder="Tulis instruksi atau catatan berkas..." required></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" name="submit_verif" class="btn btn-warning btn-sm fw-bold">Simpan Keputusan</button>
-                </div>
-            </form>
-        </div>
-    </div>
+                        <div class="modal fade" id="verifModalMasuk<?= $row['id_surat'] ?>" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <form action="../transifikasi/proses_verifikasi_surat.php" method="POST" class="modal-content">
+                                    <div class="modal-header bg-warning text-dark">
+                                        <h5 class="modal-title fw-bold fs-6"><i class="bi bi-shield-check"></i> Lembar Verifikasi No: <?= htmlspecialchars($row['no_agenda'] ?? '-') ?></h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body text-start">
+                                        <input type="hidden" name="id_surat" value="<?= $row['id_surat'] ?>">
+                                        <input type="hidden" name="jenis_tabel" value="masuk">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold text-xs mb-1">Status Verifikasi Berkas Masuk:</label>
+                                            <select class="form-select border-primary text-xs" name="status_proses" required>
+                                                <option value="Diterima" <?= ($row['status_proses'] ?? '') == 'Diterima' ? 'selected':'' ?>>✅ Diterima</option>
+                                                <option value="Ditolak" <?= ($row['status_proses'] ?? '') == 'Ditolak' ? 'selected':'' ?>>❌ Ditolak</option>
+                                                <option value="Proses Disposisi" <?= ($row['status_proses'] ?? '') == 'Proses Disposisi' ? 'selected':'' ?>>📝 Proses Disposisi</option>
+                                                <option value="Sudah Didisposisikan" <?= ($row['status_proses'] ?? '') == 'Sudah Didisposisikan' ? 'selected':'' ?>>📌 Sudah Didisposisikan</option>
+                                                <option value="Dalam Proses" <?= ($row['status_proses'] ?? '') == 'Dalam Proses' ? 'selected':'' ?>>⚙️ Dalam Proses</option>
+                                                <option value="Ditindaklanjuti/Dijawab" <?= ($row['status_proses'] ?? '') == 'Ditindaklanjuti/Dijawab' ? 'selected':'' ?>>📤 Ditindaklanjuti/Dijawab</option>
+                                                <option value="Selesai & Diarsipkan" <?= ($row['status_proses'] ?? '') == 'Selesai & Diarsipkan' ? 'selected':'' ?>>📂 Selesai & Diarsipkan</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold text-xs mb-1">Catatan Verifikator:</label>
+                                            <textarea class="form-control text-xs" name="catatan_verif" rows="3" placeholder="Tulis instruksi atau catatan berkas..." required></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer bg-light">
+                                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" name="submit_verif" class="btn btn-warning btn-sm fw-bold">Simpan Keputusan</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
 
-</td>
+                    </td>
                 </tr>
             <?php 
                 endwhile;
