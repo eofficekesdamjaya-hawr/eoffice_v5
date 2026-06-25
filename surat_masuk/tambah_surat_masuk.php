@@ -12,7 +12,7 @@ require_once('../config/koneksi.php');
 ========================================= */
 if (
     !isset($_SESSION['id_user']) ||
-    !in_array($_SESSION['tipe_akses'], ['admin', 'setum', 'superadmin'])
+    !in_array($_SESSION['tipe_akses'], ['admin', 'setum', 'superadmin', 'kakesdam_jaya', 'wakakesdam_jaya', 'spri_pimpinan'])
 ) {
     header("Location: ../auth/login_admin.php");
     exit;
