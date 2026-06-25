@@ -10,8 +10,14 @@ if (!isset($_SESSION['id_user'])) {
 }
 
 $id_user = (int)($_SESSION['id_user'] ?? 0);
-// Tambahkan baris di bawah ini untuk mengambil role_nama dari session
-$role_nama = $_SESSION['role_nama'] ?? 'Unit Pengirim';
+// MENGAMBIL ASAL_SATUAN DARI DATABASE
+$queryUser = $conn->prepare("SELECT asal_satuan FROM users WHERE id_user = ?");
+$queryUser->bind_param("i", $id_user);
+$queryUser->execute();
+$resultUser = $queryUser->get_result()->fetch_assoc();
+
+// Gunakan 'asal_satuan' dari DB, jika tidak ada gunakan default 'Unit Pengirim'
+$role_nama = $resultUser['asal_satuan'] ?? 'Unit Pengirim';
 
 
 /* 1. GENERATE NOMOR AGENDA OTOMATIS */
