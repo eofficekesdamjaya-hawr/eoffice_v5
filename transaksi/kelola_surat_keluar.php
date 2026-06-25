@@ -312,14 +312,18 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
                                         </div>
                                         <div class="modal-body text-start">
                                             <input type="hidden" name="id_surat" value="<?= $row['id_surat'] ?>">
-                                            <div class="mb-3">
-                                                <label class="form-label small fw-bold text-secondary">Nomor Surat Baru</label>
-                                                <input type="text" name="no_surat" class="form-control" value="<?= htmlspecialchars($row['no_surat'] ?? '') ?>" required>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label class="form-label small fw-bold text-secondary">Tanggal Surat Baru</label>
-                                                <input type="date" name="tgl_surat" class="form-control" value="<?= $row['tanggal_surat'] ?? '' ?>" required>
-                                            </div>
+<div class="mb-3">
+    <label class="form-label small fw-bold text-secondary">Nomor Surat Baru</label>
+    <input type="text" name="no_surat" class="form-control" value="<?= htmlspecialchars($row['no_surat'] ?? '') ?>" required>
+</div>
+<div class="mb-3">
+    <label class="form-label small fw-bold text-secondary">Tanggal Surat Baru</label>
+    <input type="date" name="tgl_surat" class="form-control" value="<?= $row['tanggal_surat'] ?? '' ?>" required>
+</div>
+<div class="mb-3">
+    <label class="form-label small fw-bold text-secondary">Tanggal Kirim Baru</label>
+    <input type="date" name="tgl_kirim" class="form-control" value="<?= $row['tanggal_kirim'] ?? '' ?>" required>
+</div>
                                         </div>
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Batal</button>
