@@ -3,6 +3,11 @@ require_once __DIR__.'/../config/session.php';
 $message = '';
 require_once '../config/koneksi.php';
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+echo "<pre style='background:#f8f9fa; padding:15px; border:1px solid #ccc; color:#000;'>";
+echo "<strong>Isi Lengkap Array Session:</strong><br>";
+print_r($_SESSION);
+echo "</pre>";
+exit;
 
 if (!isset($_SESSION['id_user'])) {
     header("Location: ../auth/login.php");
