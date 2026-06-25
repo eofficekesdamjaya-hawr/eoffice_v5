@@ -4,8 +4,8 @@ require_once "../config/session.php";
 require_once "../config/koneksi.php";
 date_default_timezone_set('Asia/Jakarta');
 
-require_once('../libraries/fpdf/fpdf.php');
-require_once('../libraries/fpdi/src/autoload.php'); 
+require_once __DIR__ . '/../libraries/fpdf/fpdf.php';
+require_once __DIR__ . '/../libraries/fpdi/autoload.php';
 
 use setasign\Fpdi\Fpdi;
 
