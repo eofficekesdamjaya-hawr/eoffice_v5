@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Jakarta');
 
 // 2. Load Berkas Library FPDF & FPDI Secara Flat (Sesuai Struktur Hasil ls -l Anda)
 require_once __DIR__ . '/../libraries/fpdf/fpdf.php';
-require_once __DIR__ . '/../libraries/fpdi/fpdi.php';
+require_once __DIR__ . '/../libraries/fpdi/src/Fpdi.php';
 
 // Pastikan hanya diakses melalui pengiriman form POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
