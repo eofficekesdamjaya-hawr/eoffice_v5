@@ -69,7 +69,7 @@ if (isset($_SESSION['id_user'])) {
                     <i class="bi bi-eye" id="icon-mata"></i>
                 </button>
             </div>
-            <small class="text-danger mt-1 d-block" style="font-size: 0.75rem;">* Sistem menggunakan verifikasi kata sandi langsung (tanpa enkripsi/hash).</small>
+            <small class="text-danger mt-1 d-block" style="font-size: 0.75rem;">* Masukkan kata sandi akun Anda untuk memverifikasi tindakan ini.</small>
         </div>
 
         <div class="d-grid gap-2 mb-3">
