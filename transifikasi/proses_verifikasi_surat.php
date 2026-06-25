@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_surat      = isset($_POST['id']) ? intval($_POST['id']) : 0;
     $status_baru   = isset($_POST['status']) ? trim($_POST['status']) : '';
     
-    // Fitur penentu jenis tabel (default ke 'keluar')
+    // Penentu jenis tabel (default ke 'keluar')
     $jenis_tabel   = isset($_POST['jenis_tabel']) ? $_POST['jenis_tabel'] : 'keluar'; 
     $tabel_target  = ($jenis_tabel === 'masuk') ? 'surat_masuk' : 'surat_keluar';
 
@@ -24,8 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     date_default_timezone_set('Asia/Jakarta');
     $waktu_log     = date('d-m-Y H:i');
 
-    // Mengunci jalur kembali tepat ke file utama Anda
-    $halaman_utama = '../transifikasi/otoritas_pengendali.php'; 
+    // PERBAIKAN UTAMA: Mengunci jalur kembali tepat ke halaman transaksi keluar/masuk Anda
+    $halaman_utama = "../transaksi/kelola_surat_{$jenis_tabel}.php"; 
 
     // Validasi data minimal harus terpenuhi
     if ($id_surat > 0 && !empty($status_baru)) {
@@ -48,9 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmtUpdate->bind_param("ssi", $status_baru, $riwayat_baru, $id_surat);
 
         if ($stmtUpdate->execute()) {
-            // Berhasil: Beri alert dan alihkan kembali ke halaman utama pengendali surat
+            // Berhasil: Beri alert dan alihkan kembali ke halaman utama kelola surat
             echo "<script>
-                    alert('Status berkas berhasil diperbarui menjadi: $status_baru dan log riwayat dicatat.');
+                    alert('Status berkas berhasil diperbarui menjadi: $status_baru');
                     window.location.href = '$halaman_utama';
                   </script>";
             exit();
@@ -73,8 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 } else {
-    // Jika diakses langsung via URL browser tanpa form, paksa tendang kembali ke halaman utama
-    header("Location: ../transifikasi/otoritas_pengendali.php");
+    // Jika diakses langsung via URL browser tanpa form, paksa tendang kembali ke halaman utama surat keluar
+    header("Location: ../transaksi/kelola_surat_keluar.php");
     exit();
 }
 ?>
