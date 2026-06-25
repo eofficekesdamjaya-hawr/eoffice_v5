@@ -154,12 +154,6 @@ if ($user_role === 'ruangan' || $user_role === 'stranger') {
 
 ?>
 
-
-
-
-
-
-
         <style>
 
        /* Mengizinkan dropdown dan modal keluar dari area table-responsive */
@@ -247,13 +241,6 @@ if ($user_role === 'ruangan' || $user_role === 'stranger') {
     </div>
 
 </div>
-
-
-
-
-
-
-
 
 
 <?php
@@ -349,7 +336,9 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
                         <?php endif; ?>
                     </td>
                     <td class="text-center"><?= renderBadgeAlur($row['status_proses'] ?? 'Pending') ?></td>
-                    <td>
+
+
+<td>
                         <div class="d-flex flex-column gap-1">
                             <?php 
                             // GRUP 1: Otoritas Penuh & Pengendali Utama Komando (Superadmin, Kakesdam, Wakakesdam, Kasi TUUD)
@@ -405,26 +394,47 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
                                 <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm fw-bold"><i class="bi bi-reply-all-fill"></i> Jawab / Revisi</a>
                             <?php endif; ?>
                         </div>
-                    </td>
-                </tr>
 
-                <div class="modal fade" id="verifModal<?= $row['id_surat'] ?>" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header bg-warning text-dark">
-                                <h5 class="modal-title fw-bold"><i class="bi bi-shield-check"></i> Verifikasi Surat Berkas</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p>Apakah Anda ingin memverifikasi draf surat dengan nomor agenda <strong><?= htmlspecialchars($row['no_agenda'] ?? '-') ?></strong>?</p>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                                <a href="../surat_keluar/proses_verifikasi.php?id=<?= $row['id_surat'] ?>&status=diterima" class="btn btn-success">Terima & Setujui</a>
+                        <div class="modal fade" id="verifModal<?= $row['id_surat'] ?>" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <form action="../transifikasi/proses_verifikasi_surat.php" method="POST">
+                                        <input type="hidden" name="id" value="<?= $row['id_surat'] ?>">
+                                        
+                                        <div class="modal-header bg-warning text-dark">
+                                            <h5 class="modal-title fw-bold"><i class="bi bi-shield-check"></i> Verifikasi Surat Berkas</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        
+                                        <div class="modal-body text-start">
+                                            <p class="mb-3">Tentukan status verifikasi draf surat dengan nomor agenda <strong><?= htmlspecialchars($row['no_agenda'] ?? '-') ?></strong>:</p>
+                                            
+                                            <div class="mb-3">
+                                                <label for="statusSelect<?= $row['id_surat'] ?>" class="form-label fw-bold text-secondary">Pilih Status Berkas:</label>
+                                                <select class="form-select" id="statusSelect<?= $row['id_surat'] ?>" name="status" required>
+                                                    <option value="" disabled selected>-- Pilih Status --</option>
+                                                    <option value="Di terima">✅ Diterima</option>
+                                                    <option value="Ditolak">❌ Ditolak</option>
+                                                    <option value="Proses Disposisi">📝 Proses Disposisi</option>
+                                                    <option value="Sudah Didisposisikan">📌 Sudah Didisposisikan</option>
+                                                    <option value="Dalam Proses">⚙️ Dalam Proses</option>
+                                                    <option value="Ditindaklanjuti">📤 Ditindaklanjuti/Dijawab</option>
+                                                    <option value="Selesai">📂 Selesai & Diarsipkan</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                            <button type="submit" class="btn btn-success fw-bold"><i class="bi bi-check-lg"></i> Simpan Verifikasi</button>
+                                        </div>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </td>
+                    
+                </tr>
             <?php
                 endwhile;
             else:
@@ -444,7 +454,7 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    // Fungsi Pengganti Dropdown Manual (Anti Tabrakan/Conflict Script Sidebar)
+    // Fungsi Pengganti Dropdown Manual
     var dropButtons = document.querySelectorAll('.dropdown-toggle-btn');
     dropButtons.forEach(function (btn) {
         btn.addEventListener('click', function (e) {
@@ -461,10 +471,10 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Menutup menu jika klik di luar area tombol aksi
+    // Menutup menu jika klik di luar area tombol aksi (SUDAH DIPERBAIKI)
     document.addEventListener('click', function () {
         document.querySelectorAll('.dropdown-menu-list').forEach(function(m) {
-            m.add('d-none');
+            m.classList.add('d-none'); 
         });
     });
 
