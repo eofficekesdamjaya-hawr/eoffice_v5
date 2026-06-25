@@ -114,7 +114,7 @@ function renderBadgeAlurMasuk($status) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->
     <style>
         .table th { vertical-align: middle; text-align: center; font-size: 0.78rem; text-transform: uppercase; background-color: #0f172a !important; color: #fff; border: 1px solid #1e293b; }
         .table td { font-size: 0.85rem; vertical-align: top; color: #1e293b; }
