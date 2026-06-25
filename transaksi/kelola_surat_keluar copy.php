@@ -40,7 +40,7 @@ if ($user_role === 'pimpinan' && empty($filter)) {
 // PROTEKSI DATA: Jika tipe aksesnya ruangan, batasi hanya melihat surat miliknya sendiri
 if ($user_role === 'ruangan') {
     $safe_creator = mysqli_real_escape_string($conn, $id_user);
-    $additional_query .= " AND (created_by = '$safe_creator' OR status_proses = 'Selesai')";
+    $additional_query .= " AND created_by = '$safe_creator'";
 }
 
 // QUERY DATA SINKRON
@@ -216,57 +216,51 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
                     </td>
                     <td class="text-center"><?= renderBadgeAlur($row['status_proses'] ?? 'Pending') ?></td>
                     <td>
+                        <div class="d-flex flex-column gap-1">
+                            <?php if (in_array($user_role, ['superadmin', 'kakesdam_jaya', 'wakakesdam_jaya', 'kasi_tuud'])): ?>
+                                <button type="button" class="btn btn-warning btn-sm fw-bold shadow-sm custom-modal-btn" data-target-modal="#verifModal<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
+                                <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
+                                <a href="../tte/ttd_surat.php?id=<?= $row['id_surat'] ?>&action=tte" class="btn btn-success btn-sm text-xs fw-bold"><i class="bi bi-pen-fill"></i> TTD Surat</a>
+                                <a href="../surat_keluar/hapus_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
+                                
+                                <div class="dropdown custom-dropdown">
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle-btn w-100 text-xs" type="button">Menu Lainnya</button>
+                                    <ul class="dropdown-menu-list bg-white border rounded shadow-sm p-2 d-none position-absolute" style="z-index:1090; min-width:160px; list-style:none;">
+                                        <li class="mb-1"><a class="text-decoration-none text-dark d-block p-1 text-xs" href="detail_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
+                                        <li class="mb-1"><a class="text-decoration-none text-dark d-block p-1 text-xs" href="riwayat_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
+                                        <?php if (in_array($user_email, ['superadmin@gmail.com', 'setum@gmail.com', 'admin@gmail.com'])): ?>
+                                            <li><button type="button" class="border-0 bg-transparent text-dark w-100 text-start p-1 text-xs custom-modal-btn" data-target-modal="#modalEditNoTgl<?= $row['id_surat'] ?>"><i class="bi bi-pencil-square text-warning"></i> Edit No/Tgl Surat</button></li>
+                                        <?php endif; ?>
+                                    </ul>
+                                </div>
 
+                            <?php elseif (in_array($user_role, ['setum', 'admin'])): ?>
+                                <button type="button" class="btn btn-warning btn-sm fw-bold custom-modal-btn" data-target-modal="#verifModal<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
+                                <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
+                                <?php if ($user_email === 'admin@gmail.com'): ?>
+                                    <a href="../surat_keluar/hapus_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
+                                <?php endif; ?>
 
-                    <div class="d-flex flex-column gap-1">
-    <?php if (trim(strtolower($row['status_proses'] ?? '')) === 'selesai'): ?>
-        <span class="btn btn-success btn-sm fw-bold disabled w-100">
-            <i class="bi bi-patch-check-fill"></i> Sudah TTD
-        </span>
-        
-        <?php if (in_array($user_role, ['superadmin', 'kakesdam_jaya', 'wakakesdam_jaya', 'kasi_tuud'])): ?>
-            <a href="../tte/hapus_ttd_aksi.php?id=<?= $row['id_surat'] ?>&jenis=keluar" 
-               class="btn btn-outline-danger btn-sm text-xs" 
-               onclick="return confirm('Batalkan status TTD berkas ini?')">
-               <i class="bi bi-x-circle"></i> Batal TTD
-            </a>
-        <?php endif; ?>
+                                <div class="dropdown custom-dropdown">
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle-btn w-100 text-xs" type="button">Menu Lainnya</button>
+                                    <ul class="dropdown-menu-list bg-white border rounded shadow-sm p-2 d-none position-absolute" style="z-index:1090; min-width:160px; list-style:none;">
+                                        <li class="mb-1"><a class="text-decoration-none text-dark d-block p-1 text-xs" href="../surat_keluar/detail_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
+                                        <li class="mb-1"><a class="text-decoration-none text-dark d-block p-1 text-xs" href="../surat_keluar/riwayat_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
+                                        <li><button type="button" class="border-0 bg-transparent text-dark w-100 text-start p-1 text-xs custom-modal-btn" data-target-modal="#modalEditNoTgl<?= $row['id_surat'] ?>"><i class="bi bi-pencil-square"></i> Edit No/Tgl Surat</button></li>
+                                    </ul>
+                                </div>
 
-    <?php else: ?>
-        <?php if (in_array($user_role, ['superadmin', 'kakesdam_jaya', 'wakakesdam_jaya', 'kasi_tuud'])): ?>
-            <button type="button" class="btn btn-warning btn-sm fw-bold shadow-sm custom-modal-btn" data-target-modal="#verifModal<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
-            <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
-            <a href="../tte/ttd_surat.php?id=<?= $row['id_surat'] ?>&action=tte" class="btn btn-success btn-sm text-xs fw-bold"><i class="bi bi-pen-fill"></i> TTD Surat</a>
-            <a href="../surat_keluar/hapus_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
-
-        <?php elseif (in_array($user_role, ['setum', 'admin'])): ?>
-            <button type="button" class="btn btn-warning btn-sm fw-bold custom-modal-btn" data-target-modal="#verifModal<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
-            <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
-            <?php if ($user_email === 'admin@gmail.com'): ?>
-                <a href="../surat_keluar/hapus_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
-            <?php endif; ?>
-
-        <?php elseif ($user_role === 'spri_pimpinan'): ?>
-            <button type="button" class="btn btn-warning btn-sm fw-bold custom-modal-btn" data-target-modal="#verifModal<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
-            <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
-
-        <?php else: ?>
-            <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm fw-bold"><i class="bi bi-reply-all-fill"></i> Jawab / Revisi</a>
-        <?php endif; ?>
-    <?php endif; ?>
-
-    <div class="dropdown custom-dropdown mt-1">
-        <button class="btn btn-outline-secondary btn-sm dropdown-toggle-btn w-100 text-xs" type="button">Menu Lainnya</button>
-        <ul class="dropdown-menu-list bg-white border rounded shadow-sm p-2 d-none position-absolute" style="z-index:1090; min-width:160px; list-style:none;">
-            <li class="mb-1"><a class="text-decoration-none text-dark d-block p-1 text-xs" href="detail_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
-            <li class="mb-1"><a class="text-decoration-none text-dark d-block p-1 text-xs" href="riwayat_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
-            <?php if (in_array($user_email, ['superadmin@gmail.com', 'setum@gmail.com', 'admin@gmail.com'])): ?>
-                <li><button type="button" class="border-0 bg-transparent text-dark w-100 text-start p-1 text-xs custom-modal-btn" data-target-modal="#modalEditNoTgl<?= $row['id_surat'] ?>"><i class="bi bi-pencil-square text-warning"></i> Edit No/Tgl Surat</button></li>
-            <?php endif; ?>
-        </ul>
-    </div>
-</div>
-
+                            <?php elseif ($user_role === 'spri_pimpinan'): ?>
+                                <button type="button" class="btn btn-warning btn-sm fw-bold custom-modal-btn" data-target-modal="#verifModal<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
+                                <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
+                                
+                                <div class="dropdown custom-dropdown">
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle-btn w-100 text-xs" type="button">Menu Lainnya</button>
+                                    <ul class="dropdown-menu-list bg-white border rounded shadow-sm p-2 d-none position-absolute" style="z-index:1090; min-width:160px; list-style:none;">
+                                        <li class="mb-1"><a class="text-decoration-none text-dark d-block p-1 text-xs" href="../surat_keluar/detail_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
+                                        <li><a class="text-decoration-none text-dark d-block p-1 text-xs" href="../surat_keluar/riwayat_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
+                                    </ul>
+                                </div>
 
                             <?php else: ?>
                                 <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm fw-bold"><i class="bi bi-reply-all-fill"></i> Jawab / Revisi</a>
