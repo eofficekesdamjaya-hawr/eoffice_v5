@@ -1,8 +1,8 @@
 <?php
-require_once "../config/session.php";
-require_once "../config/koneksi.php";
-// Sertakan file auth_config untuk mendapatkan sinkronisasi variabel $role secara otomatis
+// Pastikan konfigurasi auth dipanggil paling pertama 
+// (karena di dalam auth_config sudah include session.php secara otomatis)
 require_once "../config/auth_config.php"; 
+require_once "../config/koneksi.php";
 
 date_default_timezone_set('Asia/Jakarta');
 
@@ -10,21 +10,19 @@ date_default_timezone_set('Asia/Jakarta');
    1. VALIDASI LOGIN & MULTI-JABATAN (Pimpinan & Admin)
 ====================================================== */
 if (!isset($_SESSION['status']) || $_SESSION['status'] !== "login") {
-    // Arahkan kembali jika belum login
     header("Location: ../auth/login_pimpinan.php?pesan=belum_login");
     exit;
 }
 
-// Daftar role/jabatan yang diizinkan melakukan TTD digital
+// Gunakan variabel $role yang sudah digenerate oleh auth_config.php
 $role_diizinkan = [
     'kakesdam_jaya',
     'wakakesdam_jaya',
     'kasi_tuud'
 ];
 
-// Validasi apakah role user saat ini ada di dalam daftar yang diizinkan
 if (!in_array($role, $role_diizinkan)) {
-    echo "<script>alert('Akses Ditolak! Hanya Kakesdam, Wakakesdam, dan Kasi TUUD yang berwenang melakukan tanda tangan.'); window.location.href='../transaksi/kelola_surat.php';</script>";
+    echo "<script>alert('Akses Ditolak! Hanya Kakesdam, Wakakesdam, dan Kasi TUUD yang berwenang.'); window.location.href='../transaksi/kelola_surat.php';</script>";
     exit;
 }
 ?>
