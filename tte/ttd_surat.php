@@ -13,17 +13,19 @@ if (!isset($_SESSION['status']) || $_SESSION['status'] !== "login") {
 }
 
 // Ambil email dari session (Gunakan email karena user tersebar di 2 tempat login)
-$email_user = strtolower($_SESSION['email'] ?? ''); 
+$tipe_akses = strtolower($_SESSION['tipe_akses'] ?? ''); 
 
 // Daftar email yang diizinkan melakukan TTD
-$email_diizinkan = [
-    'kakesdamjaya@gmail.com',
-    'wakakesdamjaya@gmail.com',
-    'kasituud@gmail.com'
+$akses_diizinkan = [
+    'superadmin',
+    'admin',
+    'kakesdam_jaya',
+    'wakakedam_jaya',
+    'spri_pimpinan',
 ];
 
-if (!in_array($email_user, $email_diizinkan)) {
-    echo "<script>alert('Akses Ditolak! Hanya Kakesdam, Wakakesdam, dan Kasi TUUD yang berwenang.'); window.location.href='../transaksi/kelola_surat.php';</script>";
+if (!in_array($tipe_akses, $akses_diizinkan)) {
+    echo "<script>alert('Akses Ditolak! Hanya Kakesdam, Wakakesdam, dan Kasi TUUD yang berwenang.'); window.location.href='../transaksi/kelola_surat_masuk.php';</script>";
     exit;
 }
 ?>
