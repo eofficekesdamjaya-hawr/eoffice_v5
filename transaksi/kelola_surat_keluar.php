@@ -4,6 +4,11 @@ require_once "../config/koneksi.php";
 require_once "../config/auth_config.php"; 
 require_once "../config/hak_akses.php";   
 
+echo "<pre>";
+print_r($_SESSION);
+echo "</pre>";
+?>
+
 // SINKRONISASI DENGAN STRUKTUR SESSION ANDA
 $id_user     = $_SESSION['id_user'] ?? '';
 $nama_user   = $_SESSION['nama_user'] ?? 'Personel Ruangan';
