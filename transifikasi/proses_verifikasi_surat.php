@@ -8,43 +8,74 @@ require_once "../config/hak_akses.php";
 // Pastikan hanya diakses melalui pengiriman form POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
-    // 2. Ambil data input dan bersihkan untuk keamanan query
-    $id_surat = isset($_POST['id']) ? intval($_POST['id']) : 0;
-    $status_baru = isset($_POST['status']) ? mysqli_real_escape_string($conn, trim($_POST['status'])) : '';
+    // 2. Ambil data input form utama
+    $id_surat      = isset($_POST['id']) ? intval($_POST['id']) : 0;
+    $status_baru   = isset($_POST['status']) ? trim($_POST['status']) : '';
+    
+    // Fitur tambahan penentu jenis tabel (default ke keluar jika tidak didefinisikan)
+    $jenis_tabel   = isset($_POST['jenis_tabel']) ? $_POST['jenis_tabel'] : 'keluar'; 
+    $tabel_target  = ($jenis_tabel === 'masuk') ? 'surat_masuk' : 'surat_keluar';
+
+    // Ambil identitas verifikator dari session sistem Anda
+    $nama_user     = $_SESSION['nama_user'] ?? $_SESSION['nama'] ?? 'Verifikator';
+    $role_aktif    = $_SESSION['tipe_akses'] ?? 'Staff';
+    
+    // Set format waktu log aktivitas Indonesia
+    date_default_timezone_set('Asia/Jakarta');
+    $waktu_log     = date('d-m-Y H:i');
+
+    // Tentukan tujuan redirect halaman utama Anda setelah selesai
+    // Silakan ganti 'otoritas_pengendali.php' dengan nama asli file utama tabel Anda jika berbeda
+    $halaman_utama = '../transifikasi/otoritas_pengendali.php'; 
 
     // Validasi data minimal harus terpenuhi
     if ($id_surat > 0 && !empty($status_baru)) {
         
-        // 3. Jalankan Query Update status_proses berdasarkan id_surat
-        $queryUpdate = "UPDATE surat_keluar SET status_proses = '$status_baru' WHERE id_surat = $id_surat";
-        $eksekusi = mysqli_query($conn, $queryUpdate);
+        // 3. AMBIL DATA RIWAYAT / KETERANGAN LAMA (Menggunakan Prepared Statement)
+        $queryAmbil = "SELECT keterangan FROM {$tabel_target} WHERE id_surat = ?";
+        $stmtAmbil  = $conn->prepare($queryAmbil);
+        $stmtAmbil->bind_param("i", $id_surat);
+        $stmtAmbil->execute();
+        $resAmbil   = $stmtAmbil->get_result()->fetch_assoc();
+        $riwayat_lama = $resAmbil['keterangan'] ?? '';
+        $stmtAmbil->close();
 
-        if ($eksekusi) {
-            // Berhasil: Alihkan kembali ke halaman utama pengendali surat
+        // Gabungkan Riwayat Baru ke Baris Paling Atas (Diikuti riwayat lama di bawahnya)
+        $riwayat_baru = "[{$waktu_log}] - *{$nama_user} ({$role_aktif})* mengubah status menjadi: **{$status_baru}**\n-------------------\n" . $riwayat_lama;
+
+        // 4. UPDATE STATUS PROSES & KETERANGAN LOG BARU (Menggunakan Prepared Statement)
+        $queryUpdate = "UPDATE {$tabel_target} SET status_proses = ?, keterangan = ? WHERE id_surat = ?";
+        $stmtUpdate  = $conn->prepare($queryUpdate);
+        $stmtUpdate->bind_param("ssi", $status_baru, $riwayat_baru, $id_surat);
+
+        if ($stmtUpdate->execute()) {
+            // Berhasil: Beri alert dan alihkan kembali ke halaman utama pengendali surat
             echo "<script>
-                    alert('Status berkas berhasil diperbarui menjadi: $status_baru');
-                    window.location.href = '../transifikasi/nama_file_utama_anda.php';
+                    alert('Status berkas berhasil diperbarui menjadi: $status_baru dan log riwayat dicatat.');
+                    window.location.href = '$halaman_utama';
                   </script>";
             exit();
         } else {
-            // Gagal query database
+            // Gagal query update database
             echo "<script>
-                    alert('Gagal memperbarui database: " . mysqli_error($conn) . "');
-                    window.location.href = '../transifikasi/nama_file_utama_anda.php';
+                    alert('Gagal memperbarui database: " . addslashes($stmtUpdate->error) . "');
+                    window.location.href = '$halaman_utama';
                   </script>";
             exit();
         }
+        $stmtUpdate->close();
+
     } else {
         // Data input tidak valid atau kosong
         echo "<script>
                 alert('Parameter verifikasi data tidak lengkap.');
-                window.location.href = '../transifikasi/nama_file_utama_anda.php';
+                window.location.href = '$halaman_utama';
               </script>";
         exit();
     }
 } else {
-    // Jika diakses langsung via URL tanpa form, paksa tendang kembali ke halaman utama
-    header("Location: ../transifikasi/nama_file_utama_anda.php");
+    // Jika diakses langsung via URL browser tanpa form, paksa tendang kembali ke halaman utama
+    header("Location: ../transifikasi/otoritas_pengendali.php");
     exit();
 }
 ?>
