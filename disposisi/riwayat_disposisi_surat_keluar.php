@@ -1,11 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    ini_set('session.cookie_lifetime', 43200); 
-    ini_set('session.gc_maxlifetime', 43200);  
-    ini_set('session.use_only_cookies', 1);
-    ini_set('session.use_strict_mode', 1);
-    session_start();
-}
+require_once "../config/session.php";
 require_once "../config/koneksi.php";
 
 // Proteksi Akses Berbasis Email

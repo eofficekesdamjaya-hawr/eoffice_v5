@@ -1,7 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once "../config/session.php";
 require_once "../config/koneksi.php";
 
 // 1. Ambil ID & Query Data Surat

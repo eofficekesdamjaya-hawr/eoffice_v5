@@ -10,9 +10,7 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once "../config/session.php";
 
 require_once __DIR__ . '/../config/koneksi.php';
 date_default_timezone_set('Asia/Jakarta');

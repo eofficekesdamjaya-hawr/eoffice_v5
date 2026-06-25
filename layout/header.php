@@ -1,7 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once "../config/session.php";
 
 $base_url = "https://eofficekesdamjaya.com";
 

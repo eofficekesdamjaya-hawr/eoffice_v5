@@ -10,11 +10,7 @@
 ini_set('display_errors', 0); // Proteksi VPS: Sembunyikan error mentah dari publik
 error_reporting(E_ALL);
 
-if (session_status() === PHP_SESSION_NONE) {
-    ini_set('session.use_only_cookies', 1);
-    ini_set('session.use_strict_mode', 1);
-    session_start();
-}
+require_once "../config/session.php";
 
 require_once __DIR__ . '/../config/koneksi.php';
 date_default_timezone_set('Asia/Jakarta');

@@ -1,9 +1,7 @@
 <?php
 // File: ../config/auth_config.php
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once "../config/session.php";
 
 // 1. Daftar Mapping Jabatan (Master Data)
 $jabatanMap = [
