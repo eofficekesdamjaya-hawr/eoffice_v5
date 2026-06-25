@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once "../config/session.php";
 include "../config/koneksi.php";
 
 $nama = $_POST['nama'];

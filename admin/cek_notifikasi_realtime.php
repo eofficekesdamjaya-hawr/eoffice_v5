@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once "../config/session.php";
 
 echo json_encode([
     "session_role" => $_SESSION['role'] ?? 'TIDAK ADA SESSION'

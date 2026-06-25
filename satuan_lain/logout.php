@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once "../config/session.php";
 
 // 1. Hapus semua data session
 $_SESSION = [];

@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once "../config/session.php";
 require_once '../config/koneksi.php';
 
 if (!isset($_SESSION['id_user']) || $_SESSION['tipe_akses'] !== 'satuan_lain') {

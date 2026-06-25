@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once "../config/session.php";
 require_once __DIR__ . '/../config/koneksi.php';
 
 $user_role = strtolower(trim($_SESSION['tipe_akses'] ?? ''));

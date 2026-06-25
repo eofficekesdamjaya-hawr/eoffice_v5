@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once "../config/session.php";
 
 // Jika sudah login
 if (isset($_SESSION['id_user']) && $_SESSION['tipe_akses'] === 'satuan_lain') {

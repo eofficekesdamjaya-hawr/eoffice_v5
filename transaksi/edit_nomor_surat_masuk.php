@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/koneksi.php';
-session_start();
+require_once "../config/session.php";
 
 if (!isset($_SESSION['id_user']) || !in_array($_SESSION['role_key'], ['admin', 'superadmin', 'setum'])) {
     header("Location: ../index.php");

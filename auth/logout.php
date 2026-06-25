@@ -1,6 +1,6 @@
 <?php
 // File: /var/www/eoffice_kesdamjayav5/auth/logout.php
-session_start();
+require_once "../config/session.php";
 
 // Ambil parameter asal user untuk menentukan halaman redirect tujuan akhir
 $dari = $_GET['dari'] ?? '';

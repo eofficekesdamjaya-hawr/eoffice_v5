@@ -1,6 +1,6 @@
 <?php
 // 1. Inisialisasi Sesi & Koneksi Database
-session_start();
+require_once "../config/session.php";
 require_once '../config/koneksi.php';
 
 // Proteksi Halaman

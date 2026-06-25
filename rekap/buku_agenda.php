@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once "../config/session.php";
 require_once '../config/koneksi.php';
 
 $tgl_awal = $_GET['tgl_awal'] ?? date('Y-m-01');

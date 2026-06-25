@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once "../config/session.php";
 require_once __DIR__ . '/../config/koneksi.php';
 
 // 1. Ambil data role user dari session

@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once "../config/session.php";
 require_once "../config/koneksi.php";
 
 $id_user = (int)$_SESSION['id_user'];

@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once "../config/session.php";
 include '../config/koneksi.php';
 
 if (!isset($_SESSION['id']) || $_SESSION['role'] !== 'jajaran') {
