@@ -7,7 +7,7 @@ require_once "../config/hak_akses.php";
 echo "<pre>";
 print_r($_SESSION);
 echo "</pre>";
-?>
+exit();
 
 // SINKRONISASI DENGAN STRUKTUR SESSION ANDA
 $id_user     = $_SESSION['id_user'] ?? '';
