@@ -1,3 +1,12 @@
-/vendor/
+# Mengabaikan file sampah sisa editor nano/linux
+*.save
+*.bak_*
+*~
+.directory
 
-eoffice_kesdam_final_2026.tar.gz
+# Mengabaikan folder unggahan berkas/tanda tangan agar tidak bentrok
+/uploads/
+/uploads/tanda_tangan/
+
+# Mengabaikan file konfigurasi lokal jika ada
+config/koneksi.php.local
