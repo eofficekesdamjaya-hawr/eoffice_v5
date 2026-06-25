@@ -10,7 +10,7 @@ $nama_user    = $_SESSION['nama_user'] ?? ($_SESSION['nama'] ?? 'Personel Ruanga
 $tipe_akses   = $_SESSION['tipe_akses'] ?? ''; 
 $role_ruangan = strtolower(trim($nama_user));
 
-// --- FIX FIX FIX: PROTEKSI OTORITAS HALAMAN (SINKRON DENGAN HAK_AKSES.PHP) ---
+// --- PROTEKSI OTORITAS HALAMAN (SINKRON DENGAN HAK_AKSES.PHP) ---
 $allowed_roles = ['superadmin', 'setum', 'admin', 'kasi_tuud', 'kakesdam_jaya', 'wakakesdam_jaya', 'spri_pimpinan', 'ruangan'];
 
 if (!in_array($user_role, $allowed_roles) && $tipe_akses !== 'ruangan') {
@@ -53,13 +53,13 @@ if ($user_role === 'ruangan' || $tipe_akses === 'ruangan') {
     )";
 }
 
-// --- FIX FIX FIX: LOGIKA OTOMATIS FILTER UNTUK PIMPINAN (Kakesdam, Wakakesdam, Spri) ---
+// --- LOGIKA OTOMATIS FILTER UNTUK PIMPINAN (Kakesdam, Wakakesdam, Spri) ---
 $pimpinan_roles = ['kakesdam_jaya', 'wakakesdam_jaya', 'spri_pimpinan'];
 if (in_array($user_role, $pimpinan_roles) && empty($filter)) {
     $additional_query .= " AND (sm.status_proses = 'Proses Disposisi' OR sm.status_proses = 'Pending' OR sm.status_proses = 'Baru')";
 }
 
-// QUERY DATA SURAT MASUK (SINKRON DENGAN STRUKTUR ID_SURAT & TANGGAL_INPUT)
+// QUERY DATA SURAT MASUK
 $sqlHariIni = "SELECT sm.*, u.nama AS nama_pembuat 
                FROM surat_masuk sm 
                LEFT JOIN disposisi_surat ds ON sm.id_surat = ds.id_surat
@@ -200,7 +200,7 @@ function displayTableSuratMasuk($result, $user_role, $tipe_akses, $ruanganMap) {
                     <td class="text-center"><?= !empty($row['tanggal_surat']) ? date('d-m-Y', strtotime($row['tanggal_surat'])) : '-' ?></td>
                     <td class="text-center"><?= !empty($row['tanggal_diterima']) ? date('d-m-Y', strtotime($row['tanggal_diterima'])) : '-' ?></td>
                     <td>
-                        <span class="badge bg-secondary text-xs"><?= htmlspecialchars($row['bentuk_surat'] ?? 'Fisik') ?></span><br>
+                        <span class="badge bg-secondary text-xs"><?= htmlspecialchars($row['shapes_surat'] ?? ($row['bentuk_surat'] ?? 'Fisik')) ?></span><br>
                         <small class="text-xs text-secondary"><?= htmlspecialchars($row['jenis_surat'] ?? '-') ?></small>
                     </td>
                     <td>
@@ -222,44 +222,70 @@ function displayTableSuratMasuk($result, $user_role, $tipe_akses, $ruanganMap) {
                             <span class="text-muted">-</span>
                         <?php endif; ?>
                     </td>
-                    <td class="text-center"><?= renderBadgeAlurMasuk($row['status_proses'] ?? 'Baru') ?></td>
+                    
+                    <td class="text-center"><?= renderBadgeAlurMasuk($row['status_proses'] ?? 'Pending') ?></td>
+                    
                     <td>
                         <div class="d-flex flex-column gap-1">
                             
-                            <?php if ($user_role === 'superadmin'): ?>
+                            <?php 
+                            // GRUP 1: Otoritas Penuh & Pengendali Utama Komando (Superadmin, Kakesdam, Wakakesdam, Kasi TUUD)
+                            if (in_array($user_role, ['superadmin', 'kakesdam_jaya', 'wakakesdam_jaya', 'kasi_tuud'])): 
+                            ?>
                                 <button type="button" class="btn btn-warning btn-sm fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
-                                <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-success btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
+                                <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
+                                <a href="../tte/ttd_surat.php?id=<?= $row['id_surat'] ?>&action=tte" class="btn btn-success btn-sm text-xs fw-bold"><i class="bi bi-pen-fill"></i> TTD Surat</a>
                                 <a href="hapus_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas Surat Masuk?')"><i class="bi bi-trash"></i> Hapus</a>
                                 
                                 <div class="dropdown">
-                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">Lainnya</button>
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu Lainnya</button>
                                     <ul class="dropdown-menu">
                                         <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
-                                        <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Disposisi</a></li>
-                                        <li><button type="button" class="dropdown-item text-xs" data-bs-toggle="modal" data-bs-target="#editModal<?= $row['id_surat'] ?>"><i class="bi bi-pencil"></i> Edit Data Surat</button></li>
+                                        <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
+                                        <li><button type="button" class="dropdown-item text-xs" data-bs-toggle="modal" data-bs-target="#editModal<?= $row['id_surat'] ?>"><i class="bi bi-pencil"></i> Edit No/Tgl/Surat</button></li>
                                     </ul>
                                 </div>
 
-                            <?php elseif (in_array($user_role, ['setum', 'admin', 'kasi_tuud'])): ?>
+                            <?php 
+                            // GRUP 2: Staf Sekretariat / Pengelola Berkas (Setum & Admin)
+                            elseif (in_array($user_role, ['setum', 'admin'])): 
+                            ?>
                                 <button type="button" class="btn btn-warning btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
-                                <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-success btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
+                                <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
                                 
                                 <?php if ($user_email === 'admin@gmail.com'): ?>
                                     <a href="hapus_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
                                 <?php endif; ?>
 
                                 <div class="dropdown">
-                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">Lainnya</button>
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu Lainnya</button>
                                     <ul class="dropdown-menu">
                                         <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
-                                        <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Disposisi</a></li>
+                                        <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
+                                        <li><button type="button" class="dropdown-item text-xs" data-bs-toggle="modal" data-bs-target="#editModal<?= $row['id_surat'] ?>"><i class="bi bi-pencil-square"></i> Edit No/Tgl Surat</button></li>
                                     </ul>
                                 </div>
 
-                            <?php elseif (in_array($user_role, ['kakesdam_jaya', 'wakakesdam_jaya', 'spri_pimpinan', 'ruangan']) || $tipe_akses === 'ruangan'): ?>
-                                <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-success btn-sm fw-bold"><i class="bi bi-shuffle"></i> Buka Disposisi</a>
-                                <a href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-outline-secondary btn-sm text-xs"><i class="bi bi-eye"></i> Detail</a>
-                                <a href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-outline-primary btn-sm text-xs mt-1"><i class="bi bi-clock-history"></i> Riwayat</a>
+                            <?php 
+                            // GRUP 3: Spri Pimpinan (Akses Terbatas, Tidak Ada Tombol TTD & Hapus)
+                            elseif ($user_role === 'spri_pimpinan'): 
+                            ?>
+                                <button type="button" class="btn btn-warning btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#verifModalMasuk<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
+                                <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
+                                
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu Lainnya</button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
+                                        <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
+                                    </ul>
+                                </div>
+
+                            <?php 
+                            // GRUP DEFAULT: Ruangan / User Lain (Hanya bisa revisi/jawab)
+                            else: 
+                            ?>
+                                <a href="../disposisi/disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm fw-bold"><i class="bi bi-reply-all-fill"></i> Jawab / Revisi</a>
                             <?php endif; ?>
 
                         </div>
