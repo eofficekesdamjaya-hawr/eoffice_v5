@@ -1,0 +1,144 @@
+<?php
+session_start();
+require_once "../config/koneksi.php";
+
+/*
+|--------------------------------------------------------------------------
+| CEK LOGIN
+|--------------------------------------------------------------------------
+*/
+if (
+    empty($_SESSION['id_user']) ||
+    $_SESSION['tipe_akses'] !== 'ruangan'
+) {
+    header("Location: ../auth/login_ruangan.php");
+    exit();
+}
+
+$id_user  = (int)$_SESSION['id_user'];
+$id_surat = (int)($_GET['id'] ?? 0);
+
+if ($id_surat <= 0) {
+    die("ID Surat tidak valid.");
+}
+
+/*
+|--------------------------------------------------------------------------
+| CEK DATA SURAT
+|--------------------------------------------------------------------------
+*/
+$stmt = $conn->prepare("
+SELECT
+    id_surat,
+    file_surat,
+    status_proses
+FROM surat_keluar
+WHERE id_surat = ?
+AND created_by = ?
+LIMIT 1
+");
+
+$stmt->bind_param("ii", $id_surat, $id_user);
+$stmt->execute();
+
+$data = $stmt->get_result()->fetch_assoc();
+
+if (!$data) {
+    die("Surat tidak ditemukan atau bukan milik Anda.");
+}
+
+/*
+|--------------------------------------------------------------------------
+| OPSIONAL:
+| JANGAN IZINKAN HAPUS JIKA SUDAH SELESAI
+|--------------------------------------------------------------------------
+*/
+
+$status = strtolower(trim($data['status_proses'] ?? ''));
+
+if ($status == 'selesai') {
+
+    echo "
+    <script>
+    alert('Surat yang sudah selesai tidak boleh dihapus.');
+    window.location='daftar_surat_keluar.php';
+    </script>
+    ";
+    exit();
+}
+
+/*
+|--------------------------------------------------------------------------
+| TRANSACTION
+|--------------------------------------------------------------------------
+*/
+$conn->begin_transaction();
+
+try {
+
+    /*
+    ---------------------------------------------------------
+    HAPUS RIWAYAT
+    ---------------------------------------------------------
+    */
+
+    $hapusRiwayat = $conn->prepare("
+    DELETE FROM riwayat_surat
+    WHERE id_surat = ?
+    ");
+
+    $hapusRiwayat->bind_param("i", $id_surat);
+    $hapusRiwayat->execute();
+
+    /*
+    ---------------------------------------------------------
+    HAPUS SURAT
+    ---------------------------------------------------------
+    */
+
+    $hapusSurat = $conn->prepare("
+    DELETE FROM surat_keluar
+    WHERE id_surat = ?
+    ");
+
+    $hapusSurat->bind_param("i", $id_surat);
+    $hapusSurat->execute();
+
+    /*
+    ---------------------------------------------------------
+    HAPUS FILE
+    ---------------------------------------------------------
+    */
+
+    if (!empty($data['file_surat'])) {
+
+        $filePath =
+            "../uploads/" .
+            $data['file_surat'];
+
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+    }
+
+    $conn->commit();
+
+    echo "
+    <script>
+    alert('Surat berhasil dihapus.');
+    window.location='daftar_surat_keluar.php';
+    </script>
+    ";
+
+} catch (Exception $e) {
+
+    $conn->rollback();
+
+    echo "
+    <script>
+    alert('Gagal menghapus surat.');
+    window.location='daftar_surat_keluar.php';
+    </script>
+    ";
+}
+?>

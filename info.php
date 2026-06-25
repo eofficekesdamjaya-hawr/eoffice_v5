@@ -1,0 +1,3 @@
+3. Akses `http://localhost/info.php` melalui browser Anda.
+4. Cari baris **Loaded Configuration File**. Lihat jalur direktori yang tertulis di sana (misal: `C:\xampp\php\php.ini`). Pastikan file di jalur itulah yang Anda buka dan hapus tanda titik komanya.
+5. Jika XAMPP membandel saat di-*restart*, tutup aplikasi XAMPP, buka *Task Manager* Windows, matikan semua proses bernama `httpd.exe` atau `Apache`, lalu buka kembali XAMPP Control Panel dan klik *Start*.

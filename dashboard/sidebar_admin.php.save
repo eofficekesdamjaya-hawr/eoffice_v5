@@ -1,0 +1,375 @@
+<?php
+// Panggil master akses terlebih dahulu
+require_once '../config/hak_akses.php';
+require_once '../config/koneksi.php';
+date_default_timezone_set('Asia/Jakarta');
+
+$currentFile = basename($_SERVER['PHP_SELF']);
+
+function active($key) {
+    return (strpos($_SERVER['REQUEST_URI'], $key) !== false) ? 'active' : '';
+}
+?>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrasi SETUM KESDAM JAYA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8fafc; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #334155; overflow-x: hidden; }
+        .sidebar { width: 280px; min-height: 100vh; position: fixed; left: 0; top: 0; background: #1e293b; color: #fff; overflow-y: auto; z-index: 1000; box-shadow: 4px 0 15px rgba(0,0,0,0.08); transition: all 0.3s ease; }
+        .sidebar .nav-link { color: #94a3b8; font-size: 14px; font-weight: 500; margin: 2px 14px; padding: 8px 12px; border-radius: 5px; display: flex; align-items: center; gap: 10px; transition: all 0.2s ease; }
+        .sidebar .nav-link i { font-size: 18px; transition: transform 0.2s; }
+        .sidebar .nav-link:hover { background: rgba(255, 255, 255, 0.06); color: #f8fafc; }
+        .sidebar .nav-link:hover i { transform: scale(1.1); }
+        .sidebar .nav-link.active { background: #0284c7; color: #fff; font-weight: 600; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); }
+        .main-content { margin-left: 280px; padding: 35px; min-height: 100vh; transition: all 0.3s ease; }
+        .nav-header { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; padding: 12px 28px 4px 28px; font-weight: 700; }
+        .sidebar .nav { padding-top: 3px !important; }
+        @media (max-width: 992px) {
+            .sidebar { width: 80px; text-align: center; }
+            .sidebar .nav-link { justify-content: center; padding: 12px; margin: 6px; }
+            .sidebar .nav-link span, .sidebar .nav-header, .sidebar .sidebar-brand-text { display: none; }
+            .main-content { margin-left: 80px; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="text-center p-4 border-bottom border-secondary border-opacity-10 bg-black bg-opacity-20">
+        <h5 class="mb-1 fw-bold tracking-wide text-white sidebar-brand-text">E-OFFICE</h5>
+        <small class="text-info fw-semibold text-uppercase sidebar-brand-text" style="font-size: 10px; letter-spacing: 1px;">SETUM KESDAM JAYA</small>
+    </div>
+
+    <ul class="nav flex-column py-3">
+        <li>
+    <a href="/dashboard/dashboard_admin.php"
+       class="nav-link <?= ($currentFile == 'dashboard_admin.php') ? 'active' : '' ?>">
+        <i class="bi bi-speedometer2"></i> <span>Dashboard Center</span>
+    </a>
+</li>
+
+        <?php if ($can_A || $can_B || $can_C || $can_D): ?>
+        <div class="nav-header">Transaksi Surat</div>
+        <?php endif; ?>
+
+
+
+<?php if ($can_G): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_masuk.php" class="nav-link <?= ($currentFile == 'kelola_surat_masuk.php') ? 'active' : '' ?>">
+                <i class="bi bi-envelope-arrow-down-fill"></i> <span>Surat Masuk</span>
+            </a>
+        </li>
+        <li>
+            <a href="../surat_masuk/tambah_surat_masuk.php" class="nav-link <?= ($currentFile == 'tambah_surat_masuk.php') ? 'active' : '' ?>">
+                <i class="bi bi-plus-circle-fill"></i> <span>Tambah Surat Masuk</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <?php if ($can_G || $user_email === 'kasituud2026@gmail.com'): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_keluar.php" class="nav-link <?= ($currentFile == 'kelola_surat_keluar.php') ? 'active' : '' ?>">
+                <i class="bi bi-envelope-arrow-up-fill"></i> <span>Surat Keluar</span>
+            </a>
+        </li>
+        <li>
+            <a href="../surat_keluar/tambah_surat_keluar.php" class="nav-link <?= ($currentFile == 'tambah_surat_keluar.php') ? 'active' : '' ?>">
+                <i class="bi bi-plus-circle"></i> <span>Tambah Surat Keluar</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+
+        <?php if ($can_A): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_masuk.php?filter=disposisi" class="nav-link <?= (strpos($_SERVER['REQUEST_URI'], 'kelola_surat_masuk.php') !== false && isset($_GET['filter']) && $_GET['filter'] == 'disposisi') ? 'active' : '' ?>">
+                <i class="bi bi-envelope-open me-2"></i> <span>Disposisi Masuk</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <?php if ($can_B): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_masuk.php?filter=riwayat" class="nav-link <?= (strpos($_SERVER['REQUEST_URI'], 'filter=riwayat') !== false && strpos($_SERVER['REQUEST_URI'], 'surat_masuk') !== false) ? 'active' : '' ?>">
+                <i class="bi bi-clock-history me-2"></i> <span>Riwayat Disp. Masuk</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <?php if ($can_C): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_keluar.php?filter=disposisi" class="nav-link <?= (strpos($_SERVER['REQUEST_URI'], 'kelola_surat_keluar.php') !== false && isset($_GET['filter']) && $_GET['filter'] == 'disposisi') ? 'active' : '' ?>">
+                <i class="bi bi-envelope-arrow-up me-2"></i> <span>Disposisi Keluar</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <?php if ($can_D): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_keluar.php?filter=riwayat" class="nav-link <?= (strpos($_SERVER['REQUEST_URI'], 'filter=riwayat') !== false && strpos($_SERVER['REQUEST_URI'], 'surat_keluar') !== false) ? 'active' : '' ?>">
+                <i class="bi bi-clock-history me-2"></i> <span>Riwayat Disp. Keluar</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <?php if ($can_E || $can_F): ?>
+        <div class="nav-header">Monitoring & TTE</div>
+        <?php endif; ?>
+
+        <?php if ($can_E): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_keluar.php?filter=belum_ttd" class="nav-link <?= active('filter=belum_ttd') ?>">
+                <i class="bi bi-pen-fill"></i> <span>Belum TTD / TTE</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <?php if ($can_F): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_keluar.php?filter=sudah_ttd" class="nav-link <?= active('filter=sudah_ttd') ?>">
+                <i class="bi bi-patch-check-fill"></i> <span>Sudah TTD / TTE</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <?php if ($can_G): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_keluar.php?filter=arsip" class="nav-link <?= active('filter=arsip') ?>">
+                <i class="bi bi-archive-fill"></i> <span>Arsip Terpadu</span>
+            </a>
+        </li>
+
+
+        <div class="nav-header">Laporan</div>
+        <li>
+            <a href="../laporan/laporan_surat_masuk.php" class="nav-link <?= active('laporan_surat_masuk.php') ?>">
+                <i class="bi bi-file-earmark-bar-graph-fill"></i> <span>Laporan Masuk</span>
+            </a>
+        </li>
+        <li>
+            <a href="../laporan/laporan_surat_keluar.php" class="nav-link <?= active('laporan_surat_keluar.php') ?>">
+                <i class="bi bi-file-earmark-spreadsheet-fill"></i> <span>Laporan Keluar</span>
+            </a>
+        </li>
+
+
+        <div class="nav-header">Admin Khusus</div>
+        <?php if ($user_email === 'superadmin@gmail.com'): ?>
+        <li>
+            <a href="../pengaturan/manajemen_user.php" class="nav-link <?= active('manajemen_user.php') ?>">
+                <i class="bi bi-people-fill"></i> <span>Manajemen User</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <li>
+            <a href="../pengaturan/profil.php" class="nav-link <?= active('profil.php') ?>">
+                <i class="bi bi-gear-fill"></i> <span>Profil Sistem</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <div class="nav-header">Sistem</div>
+        <li>
+            <a href="../auth/logout.php" class="nav-link text-danger mt-2 bg-danger bg-opacity-10" onclick="return confirm('Keluar dari sistem E-Office Kesdam Jaya?')">
+                <i class="bi bi-box-arrow-right"></i> <span>Logout</span>
+            </a>
+        </li>
+    </ul>
+</div>
+
+<div class="main-content"><?php
+// Panggil master akses terlebih dahulu
+require_once '../config/hak_akses.php';
+require_once '../config/koneksi.php';
+date_default_timezone_set('Asia/Jakarta');
+
+$currentFile = basename($_SERVER['PHP_SELF']);
+
+function active($key) {
+    return (strpos($_SERVER['REQUEST_URI'], $key) !== false) ? 'active' : '';
+}
+?>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrasi SETUM KESDAM JAYA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8fafc; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #334155; overflow-x: hidden; }
+        .sidebar { width: 280px; min-height: 100vh; position: fixed; left: 0; top: 0; background: #1e293b; color: #fff; overflow-y: auto; z-index: 1000; box-shadow: 4px 0 15px rgba(0,0,0,0.08); transition: all 0.3s ease; }
+        .sidebar .nav-link { color: #94a3b8; font-size: 14px; font-weight: 500; margin: 2px 14px; padding: 8px 12px; border-radius: 5px; display: flex; align-items: center; gap: 10px; transition: all 0.2s ease; }
+        .sidebar .nav-link i { font-size: 18px; transition: transform 0.2s; }
+        .sidebar .nav-link:hover { background: rgba(255, 255, 255, 0.06); color: #f8fafc; }
+        .sidebar .nav-link:hover i { transform: scale(1.1); }
+        .sidebar .nav-link.active { background: #0284c7; color: #fff; font-weight: 600; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3); }
+        .main-content { margin-left: 280px; padding: 35px; min-height: 100vh; transition: all 0.3s ease; }
+        .nav-header { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; padding: 12px 28px 4px 28px; font-weight: 700; }
+        .sidebar .nav { padding-top: 3px !important; }
+        @media (max-width: 992px) {
+            .sidebar { width: 80px; text-align: center; }
+            .sidebar .nav-link { justify-content: center; padding: 12px; margin: 6px; }
+            .sidebar .nav-link span, .sidebar .nav-header, .sidebar .sidebar-brand-text { display: none; }
+            .main-content { margin-left: 80px; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="text-center p-4 border-bottom border-secondary border-opacity-10 bg-black bg-opacity-20">
+        <h5 class="mb-1 fw-bold tracking-wide text-white sidebar-brand-text">E-OFFICE</h5>
+        <small class="text-info fw-semibold text-uppercase sidebar-brand-text" style="font-size: 10px; letter-spacing: 1px;">SETUM KESDAM JAYA</small>
+    </div>
+
+    <ul class="nav flex-column py-3">
+        <li>
+    <a href="/dashboard/dashboard_admin.php"
+       class="nav-link <?= ($currentFile == 'dashboard_admin.php') ? 'active' : '' ?>">
+        <i class="bi bi-speedometer2"></i> <span>Dashboard Center</span>
+    </a>
+</li>
+
+        <?php if ($can_A || $can_B || $can_C || $can_D): ?>
+        <div class="nav-header">Transaksi Surat</div>
+        <?php endif; ?>
+
+
+
+<?php if ($can_G): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_masuk.php" class="nav-link <?= ($currentFile == 'kelola_surat_masuk.php') ? 'active' : '' ?>">
+                <i class="bi bi-envelope-arrow-down-fill"></i> <span>Surat Masuk</span>
+            </a>
+        </li>
+        <li>
+            <a href="../surat_masuk/tambah_surat_masuk.php" class="nav-link <?= ($currentFile == 'tambah_surat_masuk.php') ? 'active' : '' ?>">
+                <i class="bi bi-plus-circle-fill"></i> <span>Tambah Surat Masuk</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <?php if ($can_G || $user_email === 'kasituud2026@gmail.com'): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_keluar.php" class="nav-link <?= ($currentFile == 'kelola_surat_keluar.php') ? 'active' : '' ?>">
+                <i class="bi bi-envelope-arrow-up-fill"></i> <span>Surat Keluar</span>
+            </a>
+        </li>
+        <li>
+            <a href="../surat_keluar/tambah_surat_keluar.php" class="nav-link <?= ($currentFile == 'tambah_surat_keluar.php') ? 'active' : '' ?>">
+                <i class="bi bi-plus-circle"></i> <span>Tambah Surat Keluar</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+
+        <?php if ($can_A): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_masuk.php?filter=disposisi" class="nav-link <?= (strpos($_SERVER['REQUEST_URI'], 'kelola_surat_masuk.php') !== false && isset($_GET['filter']) && $_GET['filter'] == 'disposisi') ? 'active' : '' ?>">
+                <i class="bi bi-envelope-open me-2"></i> <span>Disposisi Masuk</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <?php if ($can_B): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_masuk.php?filter=riwayat" class="nav-link <?= (strpos($_SERVER['REQUEST_URI'], 'filter=riwayat') !== false && strpos($_SERVER['REQUEST_URI'], 'surat_masuk') !== false) ? 'active' : '' ?>">
+                <i class="bi bi-clock-history me-2"></i> <span>Riwayat Disp. Masuk</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <?php if ($can_C): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_keluar.php?filter=disposisi" class="nav-link <?= (strpos($_SERVER['REQUEST_URI'], 'kelola_surat_keluar.php') !== false && isset($_GET['filter']) && $_GET['filter'] == 'disposisi') ? 'active' : '' ?>">
+                <i class="bi bi-envelope-arrow-up me-2"></i> <span>Disposisi Keluar</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <?php if ($can_D): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_keluar.php?filter=riwayat" class="nav-link <?= (strpos($_SERVER['REQUEST_URI'], 'filter=riwayat') !== false && strpos($_SERVER['REQUEST_URI'], 'surat_keluar') !== false) ? 'active' : '' ?>">
+                <i class="bi bi-clock-history me-2"></i> <span>Riwayat Disp. Keluar</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <?php if ($can_E || $can_F): ?>
+        <div class="nav-header">Monitoring & TTE</div>
+        <?php endif; ?>
+
+        <?php if ($can_E): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_keluar.php?filter=belum_ttd" class="nav-link <?= active('filter=belum_ttd') ?>">
+                <i class="bi bi-pen-fill"></i> <span>Belum TTD / TTE</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <?php if ($can_F): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_keluar.php?filter=sudah_ttd" class="nav-link <?= active('filter=sudah_ttd') ?>">
+                <i class="bi bi-patch-check-fill"></i> <span>Sudah TTD / TTE</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <?php if ($can_G): ?>
+        <li>
+            <a href="../transaksi/kelola_surat_keluar.php?filter=arsip" class="nav-link <?= active('filter=arsip') ?>">
+                <i class="bi bi-archive-fill"></i> <span>Arsip Terpadu</span>
+            </a>
+        </li>
+
+
+        <div class="nav-header">Laporan</div>
+        <li>
+            <a href="../laporan/laporan_surat_masuk.php" class="nav-link <?= active('laporan_surat_masuk.php') ?>">
+                <i class="bi bi-file-earmark-bar-graph-fill"></i> <span>Laporan Masuk</span>
+            </a>
+        </li>
+        <li>
+            <a href="../laporan/laporan_surat_keluar.php" class="nav-link <?= active('laporan_surat_keluar.php') ?>">
+                <i class="bi bi-file-earmark-spreadsheet-fill"></i> <span>Laporan Keluar</span>
+            </a>
+        </li>
+
+
+        <div class="nav-header">Admin Khusus</div>
+        <?php if ($user_email === 'superadmin@gmail.com'): ?>
+        <li>
+            <a href="../pengaturan/manajemen_user.php" class="nav-link <?= active('manajemen_user.php') ?>">
+                <i class="bi bi-people-fill"></i> <span>Manajemen User</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <li>
+            <a href="../pengaturan/profil.php" class="nav-link <?= active('profil.php') ?>">
+                <i class="bi bi-gear-fill"></i> <span>Profil Sistem</span>
+            </a>
+        </li>
+        <?php endif; ?>
+
+        <div class="nav-header">Sistem</div>
+        <li>
+            <a href="../auth/logout.php" class="nav-link text-danger mt-2 bg-danger bg-opacity-10" onclick="return confirm('Keluar dari sistem E-Office Kesdam Jaya?')">
+                <i class="bi bi-box-arrow-right"></i> <span>Logout</span>
+            </a>
+        </li>
+    </ul>
+</div>
+
+<div class="main-content">

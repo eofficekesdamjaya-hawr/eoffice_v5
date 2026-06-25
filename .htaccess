@@ -1,0 +1,66 @@
+# ====================================================================
+# CONFIGURATION E-OFFICE KESDAM JAYA/JAYAKARTA (PRODUCTION HOSTER)
+# ====================================================================
+
+# 1. PARAMETER PHP ENGINE (ALOKASI UNTUK UNGGAH LAPORAN BESAR 100MB)
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 100M
+    php_value post_max_size 105M
+    php_value memory_limit 256M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>
+
+<IfModule mod_php.c>
+    php_value upload_max_filesize 100M
+    php_value post_max_size 105M
+    php_value memory_limit 256M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+</IfModule>
+
+# ====================================================================
+# 2. KEAMANAN DIREKTORI & PENYEMBUNYIAN FILE SENSITIF
+# ====================================================================
+
+# Matikan fitur Directory Browsing (Mencegah orang melihat isi folder)
+Options -Indexes
+
+# Set Halaman Utama Default ke dashboard_utama.php (Menghapus dominasi index.php)
+DirectoryIndex dashboard_utama.php index.php index.html
+
+# Blokir akses langsung ke file konfigurasi penting dan file dot (.)
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<Files "koneksi.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "config.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# ====================================================================
+# 3. URL REWRITING & BLOKIR SPIDER / BOT CLONING (HTTRACK & TOOLS)
+# ====================================================================
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # PENGALIHAN: Jika user sengaja mengetik index.php, lempar ke root (dashboard_utama.php)
+    RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /index\.php\ HTTP/ [NC]
+    RewriteRule ^index\.php$ https://eoffice.puskesadazamroni.com/ [R=301,L]
+
+    # Pengecualian: Izinkan akses normal ke folder aset agar CSS/JS/Gambar tidak rusak
+    RewriteCond %{REQUEST_URI} !^/assets/ [NC]
+    RewriteCond %{REQUEST_URI} !^/uploads/ [NC]
+
+    # Sempurnakan: Gabungkan Blokir HTTrack, Downloader Tools, & Bad Bots
+    RewriteCond %{HTTP_USER_AGENT} (HTTrack|WinHTTrack|Wget|curl|libwww-perl|python|nikto|scan|scrapy) [NC,OR]
+    RewriteCond %{HTTP_USER_AGENT} (bot|crawl|spider|slurp|yahoo|mediapartners-google) [NC]
+    RewriteRule .* - [F,L]
+</IfModule>
