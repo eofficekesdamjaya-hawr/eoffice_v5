@@ -164,6 +164,10 @@ if ($user_role === 'ruangan' || $user_role === 'stranger') {
 
         <style>
 
+        .table-responsive {
+    overflow: visible !important;
+}
+
         .table th { vertical-align: middle; text-align: center; font-size: 0.78rem; text-transform: uppercase; background-color: #1e293b !important; color: #fff; border: 1px solid #334155; }
 
         .table td { font-size: 0.85rem; vertical-align: top; color: #334155; }
@@ -440,7 +444,7 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
             <a href="../surat_keluar/hapus_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
             
             <div class="dropdown">
-                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu Lainnya</button>
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-boundary="viewport" data-bs-boundary="viewport" data-bs-toggle="dropdown" aria-expanded="false">Menu Lainnya</button>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item text-xs" href="../surat_keluar/detail_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
                     <li><a class="dropdown-item text-xs" href="../surat_keluar/riwayat_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
@@ -458,7 +462,7 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
             <?php endif; ?>
 
             <div class="dropdown">
-                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu Lainnya</button>
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-boundary="viewport" data-bs-toggle="dropdown" aria-expanded="false">Menu Lainnya</button>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item text-xs" href="../surat_keluar/detail_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
                     <li><a class="dropdown-item text-xs" href="../surat_keluar/riwayat_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
@@ -472,7 +476,7 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
             <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
             
             <div class="dropdown">
-                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">Menu Lainnya</button>
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-boundary="viewport" data-bs-toggle="dropdown" aria-expanded="false">Menu Lainnya</button>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item text-xs" href="../surat_keluar/detail_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye"></i> Detail Surat</a></li>
                     <li><a class="dropdown-item text-xs" href="../surat_keluar/riwayat_surat_keluar.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history"></i> Riwayat Surat</a></li>
