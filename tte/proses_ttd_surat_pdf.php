@@ -110,6 +110,7 @@ $pdf->useTemplate($template);
 // Hitung skala yang akurat
 $skala = $ukuran['width'] / $canvasW;
 
+
 // --------------------------
 // 6. Tanda Tangan
 // --------------------------
@@ -123,9 +124,13 @@ file_put_contents($fileTtd, base64_decode($ttdData));
 if (file_exists($fileTtd)) {
     $lebarTtd  = 150 * $skala;
     $tinggiTtd = 60 * $skala;
-    // Pastikan posisi tidak keluar halaman
-    if ($posXttd >= 0 && $posYttd >= 0 && ($posXttd + $lebarTtd) <= $ukuran['width'] && ($posYttd + $tinggiTtd) <= $ukuran['height']) {
-        $pdf->Image($fileTtd, $posXttd * $skala, $posYttd * $skala, $lebarTtd, $tinggiTtd, 'PNG');
+    
+    // Perbaikan: Konversi koordinat ke skala PDF sebelum divalidasi
+    $finalX_ttd = $posXttd * $skala;
+    $finalY_ttd = $posYttd * $skala;
+    
+    if ($finalX_ttd >= 0 && $finalY_ttd >= 0) {
+        $pdf->Image($fileTtd, $finalX_ttd, $finalY_ttd, $lebarTtd, $tinggiTtd, 'PNG');
     }
 }
 
@@ -136,18 +141,19 @@ $fileStempel = realpath(__DIR__ . "/../assets/stempel_kesdam1.png");
 if (file_exists($fileStempel)) {
     $lebarStempel  = 140 * $skala;
     $tinggiStempel = 70 * $skala;
-    if ($posXstempel >= 0 && $posYstempel >= 0 && ($posXstempel + $lebarStempel) <= $ukuran['width'] && ($posYstempel + $tinggiStempel) <= $ukuran['height']) {
-        $pdf->Image($fileStempel, $posXstempel * $skala, $posYstempel * $skala, $lebarStempel, $tinggiStempel, 'PNG');
+    
+    $finalX_stempel = $posXstempel * $skala;
+    $finalY_stempel = $posYstempel * $skala;
+    
+    if ($finalX_stempel >= 0 && $finalY_stempel >= 0) {
+        $pdf->Image($fileStempel, $finalX_stempel, $finalY_stempel, $lebarStempel, $tinggiStempel, 'PNG');
     }
 }
 
 // --------------------------
 // ✅ Perbaikan Utama: QR / Barkot
 // --------------------------
-// Gunakan jalur absolut & pastikan format JPG/PNG yang kompatibel
 $fileQr = realpath(__DIR__ . "/../assets/qr_dummy.png");
-
-// Jika tidak ada, coba ganti ke format JPG jika tersedia
 if (!file_exists($fileQr)) {
     $fileQr = realpath(__DIR__ . "/../assets/qr_dummy.jpg");
 }
@@ -156,23 +162,18 @@ if (file_exists($fileQr)) {
     $lebarQr = 75 * $skala;
     $tinggiQr = 75 * $skala;
 
-    // Cek posisi agar tidak keluar batas halaman
-    if ($posXqr >= 0 && $posYqr >= 0 && ($posXqr + $lebarQr) <= $ukuran['width'] && ($posYqr + $tinggiQr) <= $ukuran['height']) {
-        // Tentukan tipe gambar otomatis
+    $finalX_qr = $posXqr * $skala;
+    $finalY_qr = $posYqr * $skala;
+
+    if ($finalX_qr >= 0 && $finalY_qr >= 0) {
         $tipeQr = strtolower(pathinfo($fileQr, PATHINFO_EXTENSION));
         $tipeQr = ($tipeQr === 'jpg') ? 'JPG' : strtoupper($tipeQr);
 
-        // Tambahkan gambar dengan tipe eksplisit
-        $pdf->Image($fileQr, $posXqr * $skala, $posYqr * $skala, $lebarQr, $tinggiQr, $tipeQr);
+        $pdf->Image($fileQr, $finalX_qr, $finalY_qr, $lebarQr, $tinggiQr, $tipeQr);
     }
 } else {
-    // Tampilkan pesan di log jika QR tidak ditemukan
     error_log("File QR tidak ditemukan di: " . $fileQr);
 }
-
-// --------------------------
-// 8. Simpan & Update DB
-// --------------------------
 // --------------------------
 // 8. Simpan & Update DB
 // --------------------------
