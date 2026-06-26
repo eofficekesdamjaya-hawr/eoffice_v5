@@ -324,6 +324,7 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
 
                         </div>
 
+                    
                         <div class="modal fade" id="verifModalMasuk<?= $row['id_surat'] ?>" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered">
                                 <form action="../transifikasi/proses_verifikasi_surat.php" method="POST" class="modal-content">
@@ -332,11 +333,11 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body text-start">
-                                        <input type="hidden" name="id_surat" value="<?= $row['id_surat'] ?>">
+                                        <input type="hidden" name="id" value="<?= $row['id_surat'] ?>">
                                         <input type="hidden" name="jenis_tabel" value="masuk">
                                         <div class="mb-3">
                                             <label class="form-label fw-bold text-xs mb-1">Status Verifikasi Berkas Masuk:</label>
-                                            <select class="form-select border-primary text-xs" name="status_proses" required>
+                                            <select class="form-select border-primary text-xs" name="status" required>
                                                 <option value="Diterima" <?= ($row['status_proses'] ?? '') == 'Diterima' ? 'selected':'' ?>>✅ Diterima</option>
                                                 <option value="Ditolak" <?= ($row['status_proses'] ?? '') == 'Ditolak' ? 'selected':'' ?>>❌ Ditolak</option>
                                                 <option value="Proses Disposisi" <?= ($row['status_proses'] ?? '') == 'Proses Disposisi' ? 'selected':'' ?>>📝 Proses Disposisi</option>
