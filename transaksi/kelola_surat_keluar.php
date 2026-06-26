@@ -23,7 +23,7 @@ $ruanganMap = [
 $filter = $_GET['filter'] ?? '';
 $additional_query = "";
 
-// 1. Tentukan kondisi dasar berdasarkan filter status_proses (Berlaku Global)
+// 1. Tentukan kondisi dasar berdasarkan filter status_proses (Perbaikan Syntax)
 if ($filter === 'disposisi') {
     $additional_query = " AND (status_proses = 'Proses Disposisi' OR status_proses = 'Pending')";
 } elseif ($filter === 'belum_ttd') {
@@ -34,36 +34,31 @@ if ($filter === 'disposisi') {
 
 // 2. Tentukan batasan hak akses (Scope Privileges)
 $email_pimpinan_resmi = ['kakesdamjaya2026@gmail.com', 'wakakesdamjaya2026@gmail.com', 'kasituud2026@gmail.com', 'setum@gmail.com'];
-$email_admin_resmi    = ['superadmin@gmail.com', 'admin@gmail.com', 'setum@gmail.com'];
+$email_admin_resmi    = ['superadmin@gmail.com', 'admin@gmail.com'];
 
-// Kategori A: Administrator, Setum & Pimpinan (Bypass total, Akses Lintas-Ruangan Global)
+// Kategori A: Panglima Data (Superadmin, Admin, Setum, Pimpinan) -> Akses Lintas-Ruangan Global
 if (
     in_array($user_role, ['superadmin', 'admin', 'setum', 'pimpinan']) || 
     in_array($user_email, $email_pimpinan_resmi) || 
     in_array($user_email, $email_admin_resmi)
 ) {
-    // Tampilkan berkas yang butuh tindakan segera (Disposisi/Pending) + Selesai di halaman utama
+    // Jika dashboard diakses tanpa klik filter, tampilkan semua surat masuk/proses secara global
     if (empty($filter)) {
-        $additional_query .= " AND (status_proses = 'Proses Disposisi' OR status_proses = 'Pending' OR status_proses = 'Selesai')";
+        $additional_query .= " AND (status_proses = 'Proses Disposisi' OR status_proses = 'Pending' OR status_proses = 'Selesai' OR status_proses = 'Di terima')";
     }
-    // Tanpa batasan 'created_by' agar kiriman antar-pimpinan/setum/admin bisa saling terlihat secara global
+    // Tanpa batasan created_by agar semua email pimpinan, admin, dan setum bisa saling melihat data
 } 
 
-// Kategori B: Ruangan Biasa (Proteksi Ketat Data Internal Ruangan)
+// Kategori B: Ruangan Biasa (Proteksi Data Internal)
 elseif ($user_role === 'ruangan') {
     $safe_creator = mysqli_real_escape_string($conn, $id_user);
     
-    // Jika filter mencari yang SUDAH TTD, bypass batasan creator agar bisa diunduh/diarsipkan secara global
     if ($filter === 'sudah_ttd') {
-        // Dibiarkan kosong agar klausa 'status_proses = 'Selesai'' di atas berjalan global
-    } 
-    // Jika membuka halaman utama tanpa filter atau menggunakan filter disposisi/belum_ttd
-    else {
+        // No restriction agar ruangan bisa melihat arsip selesai secara global
+    } else {
         if (empty($filter)) {
-            // Halaman utama ruangan menampilkan milik sendiri + semua surat yang sudah selesai secara global
             $additional_query .= " AND (created_by = '$safe_creator' OR status_proses = 'Selesai')";
         } else {
-            // Jika filter aktif, kunci hanya milik ruangan sendiri
             $additional_query .= " AND created_by = '$safe_creator'";
         }
     }
