@@ -33,7 +33,7 @@ if (!in_array($user_email, $akses_diizinkan)) {
 }
 
 // Ambil data surat dari database
-$query = "SELECT file_surat, status_proses FROM surat_keluar WHERE id_surat = ?";
+$query = "SELECT file_surat FROM surat_keluar WHERE id_surat = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $id_surat);
 $stmt->execute();
@@ -119,10 +119,12 @@ $fileTtd = $folderSementara . "ttd_" . time() . ".png";
 $ttdData = explode(',', $signatureData)[1];
 file_put_contents($fileTtd, base64_decode($ttdData));
 
+// Sisipkan Tanda Tangan
 $lebarTtd = 150 * $skala;
 $tinggiTtd = 60 * $skala;
 $pdf->Image($fileTtd, $posXttd * $skala, $posYttd * $skala, $lebarTtd, $tinggiTtd);
 
+// Sisipkan Stempel
 $fileStempel = "../assets/stempel_kesdam1.png";
 if (file_exists($fileStempel)) {
     $lebarStempel = 140 * $skala;
@@ -130,6 +132,7 @@ if (file_exists($fileStempel)) {
     $pdf->Image($fileStempel, $posXstempel * $skala, $posYstempel * $skala, $lebarStempel, $tinggiStempel);
 }
 
+// Sisipkan QR Code
 $fileQr = "../assets/qr_dummy.png";
 if (file_exists($fileQr)) {
     $ukuranQr = 75 * $skala;
@@ -137,17 +140,31 @@ if (file_exists($fileQr)) {
 }
 
 // --------------------------
-// 6. Simpan File & Update Database (Hanya Kolom yang Ada)
+// 6. Simpan File & UPDATE DATABASE SESUAI KOLOM YANG ADA
 // --------------------------
 $pdf->Output('F', $pathHasil);
 @unlink($fileTtd);
 
-// ❗ HAPUS kolom yang tidak ada, hanya update yang pasti ada
+// Tentukan nama penandatangan sesuai email login
+if ($user_email === 'kakesdamjaya2026@gmail.com') {
+    $nama_penandatangan = "Komandan Kesdam Jaya";
+} elseif ($user_email === 'wakakesdamjaya2026@gmail.com') {
+    $nama_penandatangan = "Wakil Komandan Kesdam Jaya";
+} else {
+    $nama_penandatangan = "Kepala Staf Umum";
+}
+
+// Update ke kolom yang benar-benar ada di tabel
 $updateQuery = "UPDATE surat_keluar 
-                SET file_surat = ?, status_proses = 'selesai'
+                SET file_surat = ?, 
+                    status_tte = 'Selesai', 
+                    penandatangan = ?, 
+                    tgl_tte = NOW(), 
+                    status_proses = 'Selesai' 
                 WHERE id_surat = ?";
+
 $stmtUpdate = $conn->prepare($updateQuery);
-$stmtUpdate->bind_param("si", $namaFileBaru, $id_surat);
+$stmtUpdate->bind_param("ssi", $namaFileBaru, $nama_penandatangan, $id_surat);
 $stmtUpdate->execute();
 $stmtUpdate->close();
 
