@@ -11,7 +11,7 @@ if ($id <= 0) {
 }
 
 // 2. ✅ Proteksi Hak Akses untuk 3 Pengguna Berwenang
-$user_email = $_SESSION['email'] ?? ''; 
+$user_email = $_SESSION['email'] ?? '';
 $akses_diizinkan = [
     'kakesdamjaya2026@gmail.com',
     'wakakesdamjaya2026@gmail.com',
@@ -24,7 +24,7 @@ if (!in_array($user_email, $akses_diizinkan)) {
 }
 
 // 3. Ambil Data Surat Keluar dari Database
-$querySurat = "SELECT file_surat, status_proses FROM surat_keluar WHERE id_surat = ?";
+$querySurat = "SELECT file_surat, status_proses, status_tte FROM surat_keluar WHERE id_surat = ?";
 $stmtSurat  = $conn->prepare($querySurat);
 $stmtSurat->bind_param("i", $id);
 $stmtSurat->execute();
@@ -32,18 +32,19 @@ $resultSurat = $stmtSurat->get_result()->fetch_assoc();
 $stmtSurat->close();
 
 if (!$resultSurat) {
-    echo "<script>alert('Data berkas draf surat keluar tidak ditemukan!'); window.location.href='../transaksi/kelola_surat_keluar.php';</script>";
+    echo "<script>alert('Data surat tidak ditemukan!'); window.location.href='../transaksi/kelola_surat_keluar.php';</script>";
     exit();
 }
 
-// 4. Sinkronisasi Status dan Lokasi File PDF
+// 4. Tentukan Status TTE sesuai kolom yang ada di tabel
 $status_proses = trim(strtolower($resultSurat['status_proses'] ?? ''));
-$is_ttd        = ($status_proses === 'selesai') ? true : false;
+$status_tte    = trim($resultSurat['status_tte'] ?? 'Menunggu');
+$is_ttd        = ($status_tte === 'Selesai' || $status_proses === 'selesai' || $status_proses === 'Selesai') ? true : false;
 
 // ✅ Logika penentuan label berdasarkan email login
 if ($user_email === 'wakakesdamjaya2026@gmail.com') {
     $label_title = "TTD Asli Wakakesdam Jaya";
-    $label_desc  = "Tanda tangan resmi Wakil Komandan";
+    $label_desc  = "Tanda tangan resmi Wakil Komandan Kesdam Jaya";
     $img_preview = "../assets/ttd_wakakesdam_asli.png"; 
     $text_badge  = "Posisi TTD Wakakesdam";
 } elseif ($user_email === 'kasituud2026@gmail.com') {
@@ -53,20 +54,39 @@ if ($user_email === 'wakakesdamjaya2026@gmail.com') {
     $text_badge  = "Posisi TTD Kasituud";
 } else {
     $label_title = "TTD Asli Kakesdam Jaya";
-    $label_desc  = "Tanda tangan resmi Komandan Kesdam";
+    $label_desc  = "Tanda tangan resmi Komandan Kesdam Jaya";
     $img_preview = "../assets/ttd_kakesdam_asli.png";
     $text_badge  = "Posisi TTD Kakesdam";
 }
 
-$nama_file     = $resultSurat['file_surat'] ?? '';
+// ✅ Perbaiki pengecekan jalur file
+$nama_file     = trim($resultSurat['file_surat'] ?? '');
 $file_found    = false;
 $pdf_preview   = '';
 
 if (!empty($nama_file)) {
-    $path_file = "../uploads/surat_keluar/" . $nama_file;
-    if (file_exists($path_file)) {
+    // Gunakan jalur absolut untuk memastikan
+    $base_dir = realpath(__DIR__ . '/../uploads/surat_keluar/');
+    $path_file = $base_dir . '/' . $nama_file;
+    
+    // Bersihkan karakter tambahan jika ada
+    $path_file = str_replace(['\\', '//'], '/', $path_file);
+    
+    // Cek apakah file ada dan bisa dibaca
+    if (file_exists($path_file) && is_readable($path_file)) {
         $file_found  = true;
-        $pdf_preview = $path_file;
+        // Untuk tampilan di browser, gunakan jalur relatif
+        $pdf_preview = "../uploads/surat_keluar/" . $nama_file;
+    } else {
+        // Jika file dengan nama asli tidak ada, cek yang versi _ttd.pdf
+        $info = pathinfo($nama_file);
+        $nama_file_ttd = $info['filename'] . "_ttd." . $info['extension'];
+        $path_file_ttd = $base_dir . '/' . $nama_file_ttd;
+        
+        if (file_exists($path_file_ttd) && is_readable($path_file_ttd)) {
+            $file_found  = true;
+            $pdf_preview = "../uploads/surat_keluar/" . $nama_file_ttd;
+        }
     }
 }
 ?>
@@ -227,7 +247,7 @@ if (!empty($nama_file)) {
             <i class="bi bi-vector-pen text-success me-2"></i>
             Tanda Tangan Surat Digital
         </h4>
-        <small class="text-muted">Geser komponen ke posisi yang tepat di dokumen</small>
+        <small class="text-muted">Geser komponen ke posisi yang tepat di halaman terakhir</small>
     </div>
     <a href="../transaksi/kelola_surat_keluar.php" class="btn btn-secondary shadow-sm">
         <i class="bi bi-arrow-left"></i> Kembali
@@ -238,8 +258,8 @@ if (!empty($nama_file)) {
     <div class="col-lg-8">
         <div class="card main-card shadow-sm mb-3">
             <div class="card-header bg-warning text-dark py-2 px-3 fw-bold d-flex align-items-center justify-content-between">
-                <span><i class="bi bi-arrows-move me-2"></i> GESER KOMPONEN DI HALAMAN TERAKHIR</span>
-                <span id="page-info" class="badge bg-dark">Memuat Halaman...</span>
+                <span><i class="bi bi-arrows-move me-2"></i> AREA DOKUMEN</span>
+                <span id="page-info" class="badge bg-dark">Memuat...</span>
             </div>
             <div class="card-body p-0">
                 <?php if($file_found): ?>
@@ -262,7 +282,11 @@ if (!empty($nama_file)) {
                     <div class="d-flex flex-column justify-content-center align-items-center text-center p-5" style="height:60vh;">
                         <i class="bi bi-file-earmark-x text-danger" style="font-size:90px;"></i>
                         <h4 class="fw-bold text-danger mt-4">File PDF Tidak Ditemukan</h4>
-                        <small class="text-muted">Pastikan file sudah diupload di folder surat_keluar</small>
+                        <small class="text-muted d-block">
+                            Nama file di database: <strong><?= htmlspecialchars($nama_file) ?></strong><br>
+                            Pastikan file sudah terupload di folder: <strong>uploads/surat_keluar/</strong><br>
+                            Periksa juga huruf besar/kecil dan izin akses file
+                        </small>
                     </div>
                 <?php endif; ?>
             </div>
@@ -280,13 +304,13 @@ if (!empty($nama_file)) {
                 </div>
             </div>
             <div class="card-body">
-                <?php if($is_ttd): ?>
+                <?php if($is_ttd && $file_found): ?>
                     <div class="alert alert-success border-0 shadow-sm">
                         <div class="d-flex">
                             <i class="bi bi-check-circle-fill fs-3 me-2"></i>
                             <div>
                                 <div class="fw-bold">Dokumen Sudah Ditandatangani</div>
-                                <small>Anda dapat melihat atau mengulang tanda tangan.</small>
+                                <small>Anda dapat melihat hasil atau mengulang proses tanda tangan.</small>
                             </div>
                         </div>
                     </div>
@@ -294,11 +318,11 @@ if (!empty($nama_file)) {
                         <a href="<?= htmlspecialchars($pdf_preview) ?>" target="_blank" class="btn btn-success">
                             <i class="bi bi-eye-fill me-1"></i> Lihat Hasil PDF
                         </a>
-                        <a href="hapus_ttd_aksi.php?id=<?= $id ?>&jenis=keluar" class="btn btn-outline-danger" onclick="return confirm('Hapus tanda tangan dan ulangi proses?')">
+                        <a href="hapus_ttd_aksi.php?id=<?= $id ?>&jenis=keluar" class="btn btn-outline-danger" onclick="return confirm('Kembalikan status ke draf dan tanda tangani ulang?')">
                             <i class="bi bi-arrow-repeat me-1"></i> Tanda Tangan Ulang
                         </a>
                     </div>
-                <?php else: ?>
+                <?php elseif(!$is_ttd && $file_found): ?>
                     <form method="POST" action="proses_ttd_surat_pdf.php" id="formTTD">
                         <input type="hidden" name="id_surat" value="<?= $id ?>">
                         <input type="hidden" name="jenis_tabel" value="keluar">
@@ -338,7 +362,7 @@ if (!empty($nama_file)) {
                         </div>
 
                         <div class="alert alert-info small py-2 mb-3">
-                            <i class="bi bi-info-circle-fill"></i> Langkah: Tulis TTD &rarr; Klik Tombol Kuning &rarr; Geser Posisi &rarr; Simpan.
+                            <i class="bi bi-info-circle-fill"></i> Langkah: Tulis TTD → Klik Tombol Kuning → Geser Posisi → Simpan.
                         </div>
 
                         <button type="submit" class="btn btn-success w-100 fw-bold py-2 shadow-sm" id="btnSubmit" disabled>
@@ -425,7 +449,11 @@ if (canvasPad) {
 const pdfUrl = <?= json_encode($pdf_preview) ?>;
 
 if (pdfUrl && pdfUrl.trim() !== '') {
-    pdfjsLib.getDocument({ url: pdfUrl }).promise
+    pdfjsLib.getDocument({
+        url: pdfUrl,
+        cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/cmaps/',
+        cMapPacked: true
+    }).promise
     .then(function(pdf) {
         const lastPage = pdf.numPages;
         document.getElementById('page-info').textContent = "Halaman Terakhir: " + lastPage;
@@ -449,16 +477,19 @@ if (pdfUrl && pdfUrl.trim() !== '') {
         document.getElementById('canvas_width').value = viewport.width;
         document.getElementById('canvas_height').value = viewport.height;
 
-        // Posisi default komponen
         defaultPositions.ttd = { x: container.clientWidth / 2 - 40, y: container.clientHeight - 180 };
         defaultPositions.stempel = { x: container.clientWidth / 2 - 120, y: container.clientHeight - 200 };
         defaultPositions.qr = { x: container.clientWidth / 2 - 140, y: container.clientHeight - 160 };
 
-        return page.render({ canvasContext: context, viewport: viewport }).promise;
+        return page.render({
+            canvasContext: context,
+            viewport: viewport
+        }).promise;
     })
     .catch(function(error) {
         console.error('Gagal render PDF:', error);
-        alert('Gagal memuat dokumen PDF!');
+        document.getElementById('page-info').textContent = 'Gagal memuat PDF';
+        alert('Dokumen PDF tidak dapat dibaca: ' + error.message);
     });
 }
 
@@ -479,8 +510,10 @@ function makeElementDraggable(elementId) {
     function dragMouseDown(e) {
         e = e || window.event;
         if (e.type !== 'touchstart') e.preventDefault();
+
         pos3 = (e.type === 'touchstart') ? e.touches[0].clientX : e.clientX;
         pos4 = (e.type === 'touchstart') ? e.touches[0].clientY : e.clientY;
+
         document.onmouseup = closeDragElement;
         document.ontouchend = closeDragElement;
         document.onmousemove = elementDrag;
@@ -499,13 +532,14 @@ function makeElementDraggable(elementId) {
 
         let newX = el.offsetLeft - pos1;
         let newY = el.offsetTop - pos2;
-        const container = document.getElementById('pdf-container');
 
+        const container = document.getElementById('pdf-container');
         newX = Math.max(0, Math.min(newX, container.clientWidth - el.offsetWidth));
         newY = Math.max(0, Math.min(newY, container.clientHeight - el.offsetHeight));
 
         el.style.left = newX + "px";
         el.style.top = newY + "px";
+
         updateCoordinateInputs(elementId, newX, newY);
     }
 
@@ -532,7 +566,7 @@ makeElementDraggable('drag-ttd');
 makeElementDraggable('drag-stempel');
 makeElementDraggable('drag-qr');
 
-document.getElementById('formTTD').addEventListener('submit', function(e) {
+document.getElementById('formTTD')?.addEventListener('submit', function(e) {
     document.getElementById('signature_data').value = signaturePad.toDataURL('image/png');
     const btn = document.getElementById('btnSubmit');
     btn.disabled = true;
