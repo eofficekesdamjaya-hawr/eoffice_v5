@@ -203,7 +203,8 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
             $no = 1;
             if (mysqli_num_rows($result) > 0):
                 while ($row = mysqli_fetch_assoc($result)): 
-                    $asal_ruangan = !empty($row['asal_surat']) ? $row['asal_surat'] : ($ruanganMap[$row['created_by']] ?? 'Internal Kesdam');
+                    // PERBAIKAN LOGIKA: Mengutamakan asal_surat text, jika kosong ambil dari nama_pembuat (hasil JOIN u.nama)
+                    $asal_ruangan = !empty($row['asal_surat']) ? $row['asal_surat'] : ($row['nama_pembuat'] ?? 'Internal Kesdam');
             ?>
                 <tr>
                     <td class="text-center fw-bold"><?= $no++ ?></td>
@@ -252,16 +253,10 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
                                 <a href="hapus_surat_masuk.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas Surat Masuk?')"><i class="bi bi-trash"></i> Hapus</a>
                                 
                                 <div class="dropdown">
-<div class="dropdown">
-    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        Menu Lainnya
-    </button>
-    <ul class="dropdown-menu shadow">
-        <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
-        <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
-    </ul>
-</div>
-                                    <ul class="dropdown-menu shadow" aria-labelledby="dropGrup1_<?= $row['id_surat'] ?>">
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100 text-xs" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Menu Lainnya
+                                    </button>
+                                    <ul class="dropdown-menu shadow">
                                         <li><a class="dropdown-item text-xs" href="detail_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-eye text-primary me-2"></i> Detail Surat</a></li>
                                         <li><a class="dropdown-item text-xs" href="../disposisi/riwayat_disposisi_surat_masuk.php?id=<?= $row['id_surat'] ?>"><i class="bi bi-clock-history text-secondary me-2"></i> Riwayat Surat</a></li>
                                     </ul>
@@ -324,7 +319,6 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
 
                         </div>
 
-                    
                         <div class="modal fade" id="verifModalMasuk<?= $row['id_surat'] ?>" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered">
                                 <form action="../transifikasi/proses_verifikasi_surat.php" method="POST" class="modal-content">
