@@ -40,9 +40,12 @@ if ($data) {
         @unlink($fileLama);
     }
 
-    // Kembalikan status ke draf
+    // ✅ Kembalikan status menggunakan kolom yang BENAR-BENAR ADA di tabel
     $update = "UPDATE surat_keluar 
-               SET status_proses = 'draf', ttd_oleh = NULL, ttd_pada = NULL 
+               SET status_proses = 'Baru',
+                   status_tte = 'Menunggu',
+                   penandatangan = NULL,
+                   tgl_tte = NULL
                WHERE id_surat = ?";
     $stmtUpd = $conn->prepare($update);
     $stmtUpd->bind_param("i", $id);
@@ -51,8 +54,8 @@ if ($data) {
 }
 
 echo "<script>
-    alert('Status dikembalikan, Anda bisa menandatangani ulang!');
-    window.location.href = 'ttd_surat.php?id=$id&action=tte';
+    alert('✅ Status dikembalikan, Anda bisa menandatangani ulang!');
+    window.location.href = '../transaksi/kelola_surat_keluar.php';
 </script>";
 exit;
 ?>
