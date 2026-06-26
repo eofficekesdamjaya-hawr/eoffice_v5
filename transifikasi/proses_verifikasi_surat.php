@@ -42,15 +42,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Gabungkan Riwayat Baru ke Baris Paling Atas (Diikuti riwayat lama di bawahnya)
         $riwayat_baru = "[{$waktu_log}] - *{$nama_user} ({$role_aktif})* mengubah status menjadi: **{$status_baru}**\n-------------------\n" . $riwayat_lama;
 
-        // 4. UPDATE STATUS PROSES & KETERANGAN LOG BARU (Menggunakan Prepared Statement)
-        $queryUpdate = "UPDATE {$tabel_target} SET status_proses = ?, keterangan = ? WHERE id_surat = ?";
-        $stmtUpdate  = $conn->prepare($queryUpdate);
-        $stmtUpdate->bind_param("ssi", $status_baru, $riwayat_baru, $id_surat);
+        // ====================================================================
+        // [BARU] LOGIKA PENENTU POSISI SURAT OTOMATIS & SINKRONISASI ALUR
+        // ====================================================================
+        $posisi_surat = null; 
+        $status_proses_db = $status_baru;
+
+        if ($status_baru === 'Potong Kompas Setum') {
+            $status_proses_db = 'Proses Disposisi';
+            $posisi_surat     = 'Setum';
+        } else {
+            if ($status_baru === 'Proses Disposisi') {
+                if ($role_aktif === 'kasi_tuud') {
+                    $posisi_surat = 'Setum';
+                } elseif ($role_aktif === 'setum') {
+                    $posisi_surat = 'wakakesdam_jaya';
+                } elseif ($role_aktif === 'wakakesdam_jaya') {
+                    $posisi_surat = 'kakesdam_jaya';
+                } elseif ($role_aktif === 'kakesdam_jaya') {
+                    $posisi_surat = 'spri_pimpinan';
+                }
+            }
+        }
+
+        // 4. UPDATE STATUS PROSES, POSISI, & KETERANGAN (Prepared Statement)
+        if ($posisi_surat !== null) {
+            $queryUpdate = "UPDATE {$tabel_target} SET status_proses = ?, posisi_surat = ?, keterangan = ? WHERE id_surat = ?";
+            $stmtUpdate  = $conn->prepare($queryUpdate);
+            $stmtUpdate->bind_param("sssi", $status_proses_db, $posisi_surat, $riwayat_baru, $id_surat);
+        } else {
+            $queryUpdate = "UPDATE {$tabel_target} SET status_proses = ?, keterangan = ? WHERE id_surat = ?";
+            $stmtUpdate  = $conn->prepare($queryUpdate);
+            $stmtUpdate->bind_param("ssi", $status_proses_db, $riwayat_baru, $id_surat);
+        }
+        // ====================================================================
 
         if ($stmtUpdate->execute()) {
             // Berhasil: Beri alert dan alihkan kembali ke halaman utama kelola surat
             echo "<script>
-                    alert('Status berkas berhasil diperbarui menjadi: $status_baru');
+                    alert('Status berkas berhasil diperbarui menjadi: $status_proses_db');
                     window.location.href = '$halaman_utama';
                   </script>";
             exit();
