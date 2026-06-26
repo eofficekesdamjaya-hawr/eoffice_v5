@@ -79,7 +79,7 @@ if (!empty($nama_file)) {
         $pdf_preview = "../uploads/surat_keluar/" . $nama_file;
     }
 }
-}
+
 ?>
 
 <!DOCTYPE html>
