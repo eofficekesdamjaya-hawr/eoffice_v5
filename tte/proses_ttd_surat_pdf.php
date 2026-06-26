@@ -201,7 +201,8 @@ $updateQuery = "UPDATE surat_keluar
                 WHERE id_surat = ?";
 
 $stmtUpdate = $conn->prepare($updateQuery);
-$stmtUpdate->bind_param("ssssi", $namaFileBaru, $nama_penandatangan, $user_email, $id_surat);
+// PERBAIKAN DI SINI: Mengubah "ssssi" menjadi "sssi" agar cocok dengan 4 variabel
+$stmtUpdate->bind_param("sssi", $namaFileBaru, $nama_penandatangan, $user_email, $id_surat);
 $stmtUpdate->execute();
 $stmtUpdate->close();
 
