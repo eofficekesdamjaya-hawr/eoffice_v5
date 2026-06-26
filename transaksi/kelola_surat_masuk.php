@@ -55,7 +55,7 @@ if ($filter === 'disposisi') {
 // PROTEKSI AKSES ABSOLUT DATA RUANGAN
 if ($is_ruangan && !in_array($user_email, $allowed_emails)) {
     $safe_role = mysqli_real_escape_string($conn, $role_ruangan);
-    // Tambah variasi role dengan underscore (misal 'kasi tuud' menjadi 'kasi_tuud')
+    // Tambahkan toleransi format underscore jika di DB ditulis 'kasi_tuud'
     $safe_role_underscore = str_replace(' ', '_', $safe_role); 
     $safe_uid  = mysqli_real_escape_string($conn, $id_user);
     
@@ -74,21 +74,22 @@ if (in_array($user_email, $pimpinan_emails) && empty($filter)) {
     $additional_query .= " AND (sm.status_proses NOT LIKE '%Selesai%')";
 }
 
-// QUERY DATA SURAT MASUK
+// QUERY DATA SURAT MASUK HARI INI
 $sqlHariIni = "SELECT sm.*, u.nama AS nama_pembuat 
                FROM surat_masuk sm 
                LEFT JOIN disposisi_surat ds ON sm.id_surat = ds.id_surat
                LEFT JOIN users u ON sm.created_by = u.id 
-               WHERE DATE(sm.tanggal_input) = CURDATE() $additional_query 
+               WHERE (DATE(sm.tanggal_input) = CURDATE() OR DATE(sm.tanggal_surat) = CURDATE()) $additional_query 
                GROUP BY sm.id_surat 
                ORDER BY sm.id_surat DESC";
 $resHariIni = mysqli_query($conn, $sqlHariIni);
 
+// QUERY DATA SURAT MASUK SEBELUM HARI INI
 $sqlSebelumnya = "SELECT sm.*, u.nama AS nama_pembuat 
                   FROM surat_masuk sm 
                   LEFT JOIN disposisi_surat ds ON sm.id_surat = ds.id_surat
                   LEFT JOIN users u ON sm.created_by = u.id 
-                  WHERE DATE(sm.tanggal_input) < CURDATE() $additional_query 
+                  WHERE (DATE(sm.tanggal_input) < CURDATE() AND DATE(sm.tanggal_surat) < CURDATE()) $additional_query 
                   GROUP BY sm.id_surat 
                   ORDER BY sm.id_surat DESC";
 $resSebelumnya = mysqli_query($conn, $sqlSebelumnya);
@@ -335,15 +336,17 @@ function displayTableSuratMasuk($result, $user_email, $allowed_emails, $ruanganM
                                         <input type="hidden" name="jenis_tabel" value="masuk">
                                         <div class="mb-3">
                                             <label class="form-label fw-bold text-xs mb-1">Status Verifikasi Berkas Masuk:</label>
-                                            <select class="form-select border-primary text-xs" name="status" required>
-                                                <option value="Diterima" <?= ($row['status_proses'] ?? '') == 'Diterima' ? 'selected':'' ?>>✅ Diterima</option>
-                                                <option value="Ditolak" <?= ($row['status_proses'] ?? '') == 'Ditolak' ? 'selected':'' ?>>❌ Ditolak</option>
-                                                <option value="Proses Disposisi" <?= ($row['status_proses'] ?? '') == 'Proses Disposisi' ? 'selected':'' ?>>📝 Proses Disposisi</option>
-                                                <option value="Sudah Didisposisikan" <?= ($row['status_proses'] ?? '') == 'Sudah Didisposisikan' ? 'selected':'' ?>>📌 Sudah Didisposisikan</option>
-                                                <option value="Dalam Proses" <?= ($row['status_proses'] ?? '') == 'Dalam Proses' ? 'selected':'' ?>>⚙️ Dalam Proses</option>
-                                                <option value="Ditindaklanjuti/Dijawab" <?= ($row['status_proses'] ?? '') == 'Ditindaklanjuti/Dijawab' ? 'selected':'' ?>>📤 Ditindaklanjuti/Dijawab</option>
-                                                <option value="Selesai & Diarsipkan" <?= ($row['status_proses'] ?? '') == 'Selesai & Diarsipkan' ? 'selected':'' ?>>📂 Selesai & Diarsipkan</option>
-                                            </select>
+<select class="form-select border-primary text-xs" name="status" required>
+    <option value="Pending" <?= ($row['status_proses'] ?? '') == 'Pending' ? 'selected':'' ?>>⏳ Pending / Menunggu</option>
+    
+    <option value="Diterima" <?= ($row['status_proses'] ?? '') == 'Diterima' ? 'selected':'' ?>>✅ Diterima</option>
+    <option value="Ditolak" <?= ($row['status_proses'] ?? '') == 'Ditolak' ? 'selected':'' ?>>❌ Ditolak</option>
+    <option value="Proses Disposisi" <?= ($row['status_proses'] ?? '') == 'Proses Disposisi' ? 'selected':'' ?>>📝 Proses Disposisi</option>
+    <option value="Sudah Didisposisikan" <?= ($row['status_proses'] ?? '') == 'Sudah Didisposisikan' ? 'selected':'' ?>>📌 Sudah Didisposisikan</option>
+    <option value="Dalam Proses" <?= ($row['status_proses'] ?? '') == 'Dalam Proses' ? 'selected':'' ?>>⚙️ Dalam Proses</option>
+    <option value="Ditindaklanjuti/Dijawab" <?= ($row['status_proses'] ?? '') == 'Ditindaklanjuti/Dijawab' ? 'selected':'' ?>>📤 Ditindaklanjuti/Dijawab</option>
+    <option value="Selesai & Diarsipkan" <?= ($row['status_proses'] ?? '') == 'Selesai & Diarsipkan' ? 'selected':'' ?>>📂 Selesai & Diarsipkan</option>
+</select>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label fw-bold text-xs mb-1">Catatan Verifikator:</label>
