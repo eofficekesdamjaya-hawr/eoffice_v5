@@ -25,7 +25,7 @@ if ($id <= 0 || $jenis !== 'keluar') {
     exit;
 }
 
-// Ambil data surat
+// Ambil data surat saat ini
 $query = "SELECT file_surat FROM surat_keluar WHERE id_surat = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $id);
@@ -34,36 +34,37 @@ $data = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 if ($data) {
-    $nama_file = $data['file_surat'];
+    $nama_file_sekarang = trim($data['file_surat']);
     $folder = realpath(__DIR__ . "/../uploads/surat_keluar/") . "/";
 
     // --------------------------
-    // 1. Hapus file yang sudah ditandatangani (*_ttd.pdf)
+    // 1. Jika nama file berakhiran _ttd.pdf:
+    // - Hapus file tersebut
+    // - Ubah nama kembali ke versi asli
     // --------------------------
-    if (strpos($nama_file, '_ttd.pdf') !== false) {
-        // Jika saat ini menyimpan file versi ttd, hapus filenya
-        $file_hapus = $folder . $nama_file;
+    if (strpos($nama_file_sekarang, '_ttd.pdf') !== false) {
+        // Hapus file hasil tanda tangan
+        $file_hapus = $folder . $nama_file_sekarang;
         if (file_exists($file_hapus)) {
             @unlink($file_hapus);
         }
 
-        // Ambil nama file asli tanpa akhiran _ttd
-        $info = pathinfo($nama_file);
-        $nama_file_asli = $info['filename'] . ".pdf";
+        // Ambil nama asli tanpa akhiran _ttd
+        $info = pathinfo($nama_file_sekarang);
+        $nama_file_asli = str_replace('_ttd', '', $info['filename']) . '.' . $info['extension'];
 
-        // Pastikan file asli masih ada
+        // Pastikan file asli benar-benar ada
         if (!file_exists($folder . $nama_file_asli)) {
-            echo "<script>alert('File asli surat tidak ditemukan, tidak bisa mengulang!'); window.history.back();</script>";
+            echo "<script>alert('⚠️ File asli surat tidak ditemukan! Tidak bisa mengulang.'); window.history.back();</script>";
             exit;
         }
     } else {
-        // Jika sudah file asli, tetap gunakan
-        $nama_file_asli = $nama_file;
+        // Jika sudah versi asli, gunakan apa adanya
+        $nama_file_asli = $nama_file_sekarang;
     }
 
     // --------------------------
-    // 2. ✅ Kembalikan SEMUA status ke kondisi awal
-    // Sesuai kolom yang ada di tabel surat_keluar
+    // 2. Update database: kembalikan semua status & nama file
     // --------------------------
     $update = "UPDATE surat_keluar 
                SET file_surat = ?,
@@ -80,7 +81,7 @@ if ($data) {
 }
 
 echo "<script>
-    alert('✅ Status dikembalikan! Anda bisa menandatangani ulang sekarang.');
+    alert('✅ Berhasil dikembalikan! Silakan buka kembali untuk tanda tangan ulang.');
     window.location.href = '../transaksi/kelola_surat_keluar.php';
 </script>";
 exit;

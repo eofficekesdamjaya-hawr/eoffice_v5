@@ -65,29 +65,20 @@ $file_found    = false;
 $pdf_preview   = '';
 
 if (!empty($nama_file)) {
-    // Gunakan jalur absolut untuk memastikan
     $base_dir = realpath(__DIR__ . '/../uploads/surat_keluar/');
-    $path_file = $base_dir . '/' . $nama_file;
-    
-    // Bersihkan karakter tambahan jika ada
+    if ($base_dir === false) {
+        $base_dir = __DIR__ . '/../uploads/surat_keluar/';
+    }
+
+    $path_file = rtrim($base_dir, '/') . '/' . $nama_file;
     $path_file = str_replace(['\\', '//'], '/', $path_file);
-    
-    // Cek apakah file ada dan bisa dibaca
+
+    // Cek langsung file yang ada di database
     if (file_exists($path_file) && is_readable($path_file)) {
         $file_found  = true;
-        // Untuk tampilan di browser, gunakan jalur relatif
         $pdf_preview = "../uploads/surat_keluar/" . $nama_file;
-    } else {
-        // Jika file dengan nama asli tidak ada, cek yang versi _ttd.pdf
-        $info = pathinfo($nama_file);
-        $nama_file_ttd = $info['filename'] . "_ttd." . $info['extension'];
-        $path_file_ttd = $base_dir . '/' . $nama_file_ttd;
-        
-        if (file_exists($path_file_ttd) && is_readable($path_file_ttd)) {
-            $file_found  = true;
-            $pdf_preview = "../uploads/surat_keluar/" . $nama_file_ttd;
-        }
     }
+}
 }
 ?>
 
