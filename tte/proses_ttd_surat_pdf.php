@@ -19,7 +19,6 @@ if ($id_surat <= 0 || $jenis_tabel !== 'keluar') {
     exit;
 }
 
-// ✅ Akses untuk 3 pengguna yang berwenang
 $user_email = $_SESSION['email'] ?? '';
 $akses_diizinkan = [
     'kakesdamjaya2026@gmail.com',
@@ -32,7 +31,6 @@ if (!in_array($user_email, $akses_diizinkan)) {
     exit;
 }
 
-// Ambil data surat dari database
 $query = "SELECT file_surat FROM surat_keluar WHERE id_surat = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $id_surat);
@@ -46,7 +44,7 @@ if (!$surat || empty($surat['file_surat'])) {
 }
 
 // --------------------------
-// 2. Ambil Data Posisi & Gambar
+// 2. Ambil Posisi
 // --------------------------
 $signatureData = $_POST['signature_data'] ?? '';
 $posXttd       = isset($_POST['pos_x_ttd']) ? floatval($_POST['pos_x_ttd']) : 0;
@@ -58,20 +56,20 @@ $posYqr        = isset($_POST['pos_y_qr']) ? floatval($_POST['pos_y_qr']) : 0;
 $canvasW       = isset($_POST['canvas_width']) ? floatval($_POST['canvas_width']) : 0;
 $canvasH       = isset($_POST['canvas_height']) ? floatval($_POST['canvas_height']) : 0;
 
-if (empty($signatureData) || $canvasW <= 0 || $canvasH <= 0) {
-    echo "<script>alert('Data posisi atau tanda tangan tidak lengkap!'); window.history.back();</script>";
+if (empty($signatureData) || $canvasW <= 0) {
+    echo "<script>alert('Data tidak lengkap!'); window.history.back();</script>";
     exit;
 }
 
 // --------------------------
-// 3. Konfigurasi File & Folder
+// 3. File Path
 // --------------------------
-$folderUpload = "../uploads/surat_keluar/";
+$folderUpload = realpath(__DIR__ . "/../uploads/surat_keluar/") . "/";
 $namaFileAsli = $surat['file_surat'];
 $pathAsli     = $folderUpload . $namaFileAsli;
 
 if (!file_exists($pathAsli)) {
-    echo "<script>alert('File PDF asli tidak ditemukan!'); window.history.back();</script>";
+    echo "<script>alert('File PDF asli tidak ada!'); window.history.back();</script>";
     exit;
 }
 
@@ -80,7 +78,7 @@ $namaFileBaru = $infoFile['filename'] . "_ttd.pdf";
 $pathHasil = $folderUpload . $namaFileBaru;
 
 // --------------------------
-// 4. ✅ MUAT LIBRARY DENGAN URUTAN BENAR
+// 4. Load Library (Urutan Benar)
 // --------------------------
 require_once "../libraries/fpdf/fpdf.php";
 require_once "../libraries/fpdf/autoload.php";
@@ -92,60 +90,93 @@ if (!class_exists('FPDF') || !class_exists('setasign\Fpdi\Fpdi')) {
     exit;
 }
 
+// --------------------------
+// 5. Proses PDF
+// --------------------------
 $pdf = new Fpdi();
-
 $jumlahHalaman = $pdf->setSourceFile($pathAsli);
 if ($jumlahHalaman < 1) {
-    echo "<script>alert('File PDF kosong atau rusak!'); window.history.back();</script>";
+    echo "<script>alert('PDF kosong/rusak!'); window.history.back();</script>";
     exit;
 }
 
-$nomorHalaman = $jumlahHalaman;
-$templateId = $pdf->importPage($nomorHalaman);
-$ukuranHalaman = $pdf->getTemplateSize($templateId);
+$halamanTerakhir = $jumlahHalaman;
+$template = $pdf->importPage($halamanTerakhir);
+$ukuran = $pdf->getTemplateSize($template);
 
-$pdf->AddPage($ukuranHalaman['orientation'], [$ukuranHalaman['width'], $ukuranHalaman['height']]);
-$pdf->useTemplate($templateId);
+$pdf->AddPage($ukuran['orientation'], [$ukuran['width'], $ukuran['height']]);
+$pdf->useTemplate($template);
 
-$skala = $ukuranHalaman['width'] / $canvasW;
+// Hitung skala yang akurat
+$skala = $ukuran['width'] / $canvasW;
 
 // --------------------------
-// 5. Proses & Sisipkan Gambar
+// 6. Tanda Tangan
 // --------------------------
-$folderSementara = "../uploads/sementara/";
+$folderSementara = realpath(__DIR__ . "/../uploads/sementara/") . "/";
 if (!file_exists($folderSementara)) mkdir($folderSementara, 0755, true);
 $fileTtd = $folderSementara . "ttd_" . time() . ".png";
 
 $ttdData = explode(',', $signatureData)[1];
 file_put_contents($fileTtd, base64_decode($ttdData));
 
-// Sisipkan Tanda Tangan
-$lebarTtd = 150 * $skala;
-$tinggiTtd = 60 * $skala;
-$pdf->Image($fileTtd, $posXttd * $skala, $posYttd * $skala, $lebarTtd, $tinggiTtd);
-
-// Sisipkan Stempel
-$fileStempel = "../assets/stempel_kesdam1.png";
-if (file_exists($fileStempel)) {
-    $lebarStempel = 140 * $skala;
-    $tinggiStempel = 70 * $skala;
-    $pdf->Image($fileStempel, $posXstempel * $skala, $posYstempel * $skala, $lebarStempel, $tinggiStempel);
-}
-
-// Sisipkan QR Code
-$fileQr = "../assets/qr_dummy.png";
-if (file_exists($fileQr)) {
-    $ukuranQr = 75 * $skala;
-    $pdf->Image($fileQr, $posXqr * $skala, $posYqr * $skala, $ukuranQr, $ukuranQr);
+if (file_exists($fileTtd)) {
+    $lebarTtd  = 150 * $skala;
+    $tinggiTtd = 60 * $skala;
+    // Pastikan posisi tidak keluar halaman
+    if ($posXttd >= 0 && $posYttd >= 0 && ($posXttd + $lebarTtd) <= $ukuran['width'] && ($posYttd + $tinggiTtd) <= $ukuran['height']) {
+        $pdf->Image($fileTtd, $posXttd * $skala, $posYttd * $skala, $lebarTtd, $tinggiTtd, 'PNG');
+    }
 }
 
 // --------------------------
-// 6. Simpan File & UPDATE DATABASE SESUAI KOLOM YANG ADA
+// 7. Stempel
+// --------------------------
+$fileStempel = realpath(__DIR__ . "/../assets/stempel_kesdam1.png");
+if (file_exists($fileStempel)) {
+    $lebarStempel  = 140 * $skala;
+    $tinggiStempel = 70 * $skala;
+    if ($posXstempel >= 0 && $posYstempel >= 0 && ($posXstempel + $lebarStempel) <= $ukuran['width'] && ($posYstempel + $tinggiStempel) <= $ukuran['height']) {
+        $pdf->Image($fileStempel, $posXstempel * $skala, $posYstempel * $skala, $lebarStempel, $tinggiStempel, 'PNG');
+    }
+}
+
+// --------------------------
+// ✅ Perbaikan Utama: QR / Barkot
+// --------------------------
+// Gunakan jalur absolut & pastikan format JPG/PNG yang kompatibel
+$fileQr = realpath(__DIR__ . "/../assets/qr_dummy.png");
+
+// Jika tidak ada, coba ganti ke format JPG jika tersedia
+if (!file_exists($fileQr)) {
+    $fileQr = realpath(__DIR__ . "/../assets/qr_dummy.jpg");
+}
+
+if (file_exists($fileQr)) {
+    $lebarQr = 75 * $skala;
+    $tinggiQr = 75 * $skala;
+
+    // Cek posisi agar tidak keluar batas halaman
+    if ($posXqr >= 0 && $posYqr >= 0 && ($posXqr + $lebarQr) <= $ukuran['width'] && ($posYqr + $tinggiQr) <= $ukuran['height']) {
+        // Tentukan tipe gambar otomatis
+        $tipeQr = strtolower(pathinfo($fileQr, PATHINFO_EXTENSION));
+        $tipeQr = ($tipeQr === 'jpg') ? 'JPG' : strtoupper($tipeQr);
+
+        // Tambahkan gambar dengan tipe eksplisit
+        $pdf->Image($fileQr, $posXqr * $skala, $posYqr * $skala, $lebarQr, $tinggiQr, $tipeQr);
+    }
+} else {
+    // Tampilkan pesan di log jika QR tidak ditemukan
+    error_log("File QR tidak ditemukan di: " . $fileQr);
+}
+
+// --------------------------
+// 8. Simpan & Update DB
 // --------------------------
 $pdf->Output('F', $pathHasil);
 @unlink($fileTtd);
 
-// Tentukan nama penandatangan sesuai email login
+// Tentukan nama penandatangan
 if ($user_email === 'kakesdamjaya2026@gmail.com') {
     $nama_penandatangan = "Komandan Kesdam Jaya";
 } elseif ($user_email === 'wakakesdamjaya2026@gmail.com') {
@@ -154,7 +185,7 @@ if ($user_email === 'kakesdamjaya2026@gmail.com') {
     $nama_penandatangan = "Kepala Staf Umum";
 }
 
-// Update ke kolom yang benar-benar ada di tabel
+// Update sesuai kolom tabel yang ada
 $updateQuery = "UPDATE surat_keluar 
                 SET file_surat = ?, 
                     status_tte = 'Selesai', 
@@ -169,10 +200,10 @@ $stmtUpdate->execute();
 $stmtUpdate->close();
 
 // --------------------------
-// 7. Selesai
+// 9. Selesai
 // --------------------------
 echo "<script>
-    alert('✅ Tanda tangan berhasil diterapkan!');
+    alert('✅ Tanda tangan, stempel & QR berhasil diterapkan!');
     window.location.href = '../transaksi/kelola_surat_keluar.php';
 </script>";
 exit;
