@@ -80,21 +80,22 @@ $namaFileBaru = $infoFile['filename'] . "_ttd.pdf";
 $pathHasil = $folderUpload . $namaFileBaru;
 
 // --------------------------
-// 4. INISIALISASI FPDI TANPA NAMESPACE (Solusi Error Utama)
+// 4. ✅ INISIALISASI FPDI - JALUR SESUAI STRUKTUR FOLDER ANDA
 // --------------------------
-// Gunakan jalur ini yang sudah teruji kompatibel
-set_include_path(get_include_path() . PATH_SEPARATOR . realpath("../libraries/"));
+// Kita gunakan jalur yang pasti ada: ../libraries/fpdf/Fpdi.php
+set_include_path(get_include_path() . PATH_SEPARATOR . realpath("../libraries/fpdf/"));
 
-// Muat file FPDI versi lama
-require_once "../libraries/fpdf.php";
-require_once "../libraries/fpdi.php";
+// Muat file yang dibutuhkan secara berurutan
+require_once "../libraries/fpdf/fpdf.php";       // File dasar FPDF
+require_once "../libraries/fpdf/Fpdi.php";       // File utama FPDI
 
-if (!class_exists('FPDI')) {
-    echo "<script>alert('Library PDF tidak ditemukan! Hubungi admin.'); window.history.back();</script>";
+if (!class_exists('Fpdi')) {
+    echo "<script>alert('Library PDF tidak dapat dimuat! Hubungi admin.'); window.history.back();</script>";
     exit;
 }
 
-$pdf = new FPDI();
+// Buat objek PDF
+$pdf = new Fpdi();
 
 // Ambil halaman terakhir
 $jumlahHalaman = $pdf->setSourceFile($pathAsli);
