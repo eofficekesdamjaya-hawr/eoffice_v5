@@ -231,36 +231,47 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
         </span>
     <?php endif; ?>
         
-        <?php if (in_array($user_role, ['superadmin', 'kakesdam_jaya', 'wakakesdam_jaya', 'kasi_tuud'])): ?>
-            <a href="../tte/hapus_ttd_aksi.php?id=<?= $row['id_surat'] ?>&jenis=keluar" 
-               class="btn btn-outline-danger btn-sm text-xs" 
-               onclick="return confirm('Batalkan status TTD berkas ini?')">
-               <i class="bi bi-x-circle"></i> Batal TTD
-            </a>
+    <?php 
+    // Email pimpinan yang berhak melakukan pembatalan & disposisi lanjutan
+    $email_pimpinan_resmi = ['kakesdamjaya2026@gmail.com', 'wakakesdamjaya2026@gmail.com', 'kasituud2026@gmail.com', 'superadmin@gmail.com', 'admin@gmail.com', 'setum@gmail.com'];
+    ?>
+
+    <?php if (in_array($user_role, ['superadmin', 'kakesdam_jaya', 'wakakesdam_jaya', 'kasi_tuud']) || in_array($user_email, $email_pimpinan_resmi)): ?>
+        <a href="../tte/hapus_ttd_aksi.php?id=<?= $row['id_surat'] ?>&jenis=keluar" 
+           class="btn btn-outline-danger btn-sm text-xs" 
+           onclick="return confirm('Batalkan status TTD berkas ini?')">
+           <i class="bi bi-x-circle"></i> Batal TTD
+        </a>
+    <?php endif; ?>
+
+    <?php if (in_array($user_role, ['superadmin', 'kakesdam_jaya', 'wakakesdam_jaya', 'kasi_tuud', 'setum', 'admin', 'spri_pimpinan']) || in_array($user_email, $email_pimpinan_resmi)): ?>
+        <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold">
+            <i class="bi bi-shuffle"></i> Disposisi Lanjutan
+        </a>
+    <?php endif; ?>
+
+<?php else: ?>
+    <?php if (in_array($user_role, ['superadmin', 'kakesdam_jaya', 'wakakesdam_jaya', 'kasi_tuud']) || in_array($user_email, ['kakesdamjaya2026@gmail.com', 'wakakesdamjaya2026@gmail.com', 'kasituud2026@gmail.com'])): ?>
+        <button type="button" class="btn btn-warning btn-sm fw-bold shadow-sm custom-modal-btn" data-target-modal="#verifModal<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
+        <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
+        <a href="../tte/ttd_surat.php?id=<?= $row['id_surat'] ?>&action=tte" class="btn btn-success btn-sm text-xs fw-bold"><i class="bi bi-pen-fill"></i> TTD Surat</a>
+        <a href="../surat_keluar/hapus_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
+
+    <?php elseif (in_array($user_role, ['setum', 'admin'])): ?>
+        <button type="button" class="btn btn-warning btn-sm fw-bold custom-modal-btn" data-target-modal="#verifModal<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
+        <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
+        <?php if (in_array($user_email, ['admin@gmail.com', 'superadmin@gmail.com'])): ?>
+            <a href="../surat_keluar/hapus_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
         <?php endif; ?>
+
+    <?php elseif ($user_role === 'spri_pimpinan'): ?>
+        <button type="button" class="btn btn-warning btn-sm fw-bold custom-modal-btn" data-target-modal="#verifModal<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
+        <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
 
     <?php else: ?>
-        <?php if (in_array($user_role, ['superadmin', 'kakesdam_jaya', 'wakakesdam_jaya', 'kasi_tuud'])): ?>
-            <button type="button" class="btn btn-warning btn-sm fw-bold shadow-sm custom-modal-btn" data-target-modal="#verifModal<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
-            <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
-            <a href="../tte/ttd_surat.php?id=<?= $row['id_surat'] ?>&action=tte" class="btn btn-success btn-sm text-xs fw-bold"><i class="bi bi-pen-fill"></i> TTD Surat</a>
-            <a href="../surat_keluar/hapus_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Permanen Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
-
-        <?php elseif (in_array($user_role, ['setum', 'admin'])): ?>
-            <button type="button" class="btn btn-warning btn-sm fw-bold custom-modal-btn" data-target-modal="#verifModal<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
-            <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
-            <?php if ($user_email === 'admin@gmail.com'): ?>
-                <a href="../surat_keluar/hapus_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm text-xs" onclick="return confirm('Hapus Berkas?')"><i class="bi bi-trash"></i> Hapus</a>
-            <?php endif; ?>
-
-        <?php elseif ($user_role === 'spri_pimpinan'): ?>
-            <button type="button" class="btn btn-warning btn-sm fw-bold custom-modal-btn" data-target-modal="#verifModal<?= $row['id_surat'] ?>"><i class="bi bi-shield-check"></i> Verifikasi</button>
-            <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-primary btn-sm fw-bold"><i class="bi bi-shuffle"></i> Disposisi</a>
-
-        <?php else: ?>
-            <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm fw-bold"><i class="bi bi-reply-all-fill"></i> Jawab / Revisi</a>
-        <?php endif; ?>
+        <a href="../disposisi/disposisi_surat_keluar.php?id=<?= $row['id_surat'] ?>" class="btn btn-danger btn-sm fw-bold"><i class="bi bi-reply-all-fill"></i> Jawab / Revisi</a>
     <?php endif; ?>
+<?php endif; ?>
 
     <div class="dropdown custom-dropdown mt-1">
         <button class="btn btn-outline-secondary btn-sm dropdown-toggle-btn w-100 text-xs" type="button">Menu Lainnya</button>
