@@ -28,7 +28,7 @@ $akses_diizinkan = [
 ];
 
 if (!in_array($user_email, $akses_diizinkan)) {
-    echo "<script>alert('Anda tidak memiliki otoritas untuk menandatangani!'); window.history.back();</script>";
+    echo "<script>alert('Anda tidak memiliki otoritas untuk menandatangani surat ini!'); window.history.back();</script>";
     exit;
 }
 
@@ -80,16 +80,15 @@ $namaFileBaru = $infoFile['filename'] . "_ttd.pdf";
 $pathHasil = $folderUpload . $namaFileBaru;
 
 // --------------------------
-// 4. ✅ INISIALISASI FPDI - JALUR SESUAI STRUKTUR FOLDER ANDA
+// 4. ✅ MUAT LIBRARY DENGAN AUTLOAD (CARA BENAR)
 // --------------------------
-// Kita gunakan jalur yang pasti ada: ../libraries/fpdf/Fpdi.php
-set_include_path(get_include_path() . PATH_SEPARATOR . realpath("../libraries/fpdf/"));
+// Gunakan autoload.php yang sudah tersedia di folder tersebut
+require_once "../libraries/fpdf/autoload.php";
 
-// Muat file yang dibutuhkan secara berurutan
-require_once "../libraries/fpdf/fpdf.php";       // File dasar FPDF
-require_once "../libraries/fpdf/Fpdi.php";       // File utama FPDI
+// Gunakan class dengan namespace yang benar
+use setasign\Fpdi\Fpdi;
 
-if (!class_exists('Fpdi')) {
+if (!class_exists('setasign\Fpdi\Fpdi')) {
     echo "<script>alert('Library PDF tidak dapat dimuat! Hubungi admin.'); window.history.back();</script>";
     exit;
 }
