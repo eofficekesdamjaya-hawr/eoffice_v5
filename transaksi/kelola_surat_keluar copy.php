@@ -57,7 +57,7 @@ elseif ($user_role === 'ruangan') {
 }
 
 // QUERY DATA SINKRON
-$sqlHariIni = "SELECT * FROM surat_keluar WHERE DATE(created_at) = CURDATE() $additional_query ORDER
+$sqlHariIni = "SELECT * FROM surat_keluar WHERE DATE(created_at) = CURDATE() $additional_query ORDER BY id_surat DESC";
 $resHariIni = mysqli_query($conn, $sqlHariIni);
 
 $sqlSebelumnya = "SELECT * FROM surat_keluar WHERE DATE(created_at) < CURDATE() $additional_query ORDER BY id_surat DESC";
