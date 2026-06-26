@@ -80,27 +80,20 @@ $namaFileBaru = $infoFile['filename'] . "_ttd.pdf";
 $pathHasil = $folderUpload . $namaFileBaru;
 
 // --------------------------
-// 4. ✅ MUAT LIBRARY DENGAN URUTAN YANG BENAR
+// 4. ✅ MUAT LIBRARY DENGAN URUTAN BENAR
 // --------------------------
-// Langkah 1: Muat FPDF terlebih dahulu (wajib ada sebelum FPDI)
 require_once "../libraries/fpdf/fpdf.php";
-
-// Langkah 2: Baru muat autoload FPDI
 require_once "../libraries/fpdf/autoload.php";
 
-// Langkah 3: Gunakan namespace yang sesuai
 use setasign\Fpdi\Fpdi;
 
-// Cek apakah semua kelas sudah terbaca
 if (!class_exists('FPDF') || !class_exists('setasign\Fpdi\Fpdi')) {
-    echo "<script>alert('Gagal memuat library PDF. Hubungi admin.'); window.history.back();</script>";
+    echo "<script>alert('Gagal memuat library PDF!'); window.history.back();</script>";
     exit;
 }
 
-// Buat objek PDF
 $pdf = new Fpdi();
 
-// Ambil halaman terakhir
 $jumlahHalaman = $pdf->setSourceFile($pathAsli);
 if ($jumlahHalaman < 1) {
     echo "<script>alert('File PDF kosong atau rusak!'); window.history.back();</script>";
@@ -114,7 +107,6 @@ $ukuranHalaman = $pdf->getTemplateSize($templateId);
 $pdf->AddPage($ukuranHalaman['orientation'], [$ukuranHalaman['width'], $ukuranHalaman['height']]);
 $pdf->useTemplate($templateId);
 
-// Hitung skala konversi posisi
 $skala = $ukuranHalaman['width'] / $canvasW;
 
 // --------------------------
@@ -124,16 +116,13 @@ $folderSementara = "../uploads/sementara/";
 if (!file_exists($folderSementara)) mkdir($folderSementara, 0755, true);
 $fileTtd = $folderSementara . "ttd_" . time() . ".png";
 
-// Simpan tanda tangan
 $ttdData = explode(',', $signatureData)[1];
 file_put_contents($fileTtd, base64_decode($ttdData));
 
-// Sisipkan Tanda Tangan
 $lebarTtd = 150 * $skala;
 $tinggiTtd = 60 * $skala;
 $pdf->Image($fileTtd, $posXttd * $skala, $posYttd * $skala, $lebarTtd, $tinggiTtd);
 
-// Sisipkan Stempel
 $fileStempel = "../assets/stempel_kesdam1.png";
 if (file_exists($fileStempel)) {
     $lebarStempel = 140 * $skala;
@@ -141,7 +130,6 @@ if (file_exists($fileStempel)) {
     $pdf->Image($fileStempel, $posXstempel * $skala, $posYstempel * $skala, $lebarStempel, $tinggiStempel);
 }
 
-// Sisipkan QR Code
 $fileQr = "../assets/qr_dummy.png";
 if (file_exists($fileQr)) {
     $ukuranQr = 75 * $skala;
@@ -149,25 +137,17 @@ if (file_exists($fileQr)) {
 }
 
 // --------------------------
-// 6. Simpan & Update Database
+// 6. Simpan File & Update Database (Hanya Kolom yang Ada)
 // --------------------------
 $pdf->Output('F', $pathHasil);
 @unlink($fileTtd);
 
-// Tentukan nama penandatangan
-if ($user_email === 'kakesdamjaya2026@gmail.com') {
-    $ttdOleh = "Komandan Kesdam Jaya";
-} elseif ($user_email === 'wakakesdamjaya2026@gmail.com') {
-    $ttdOleh = "Wakil Komandan Kesdam Jaya";
-} else {
-    $ttdOleh = "Kepala Staf Umum";
-}
-
+// ❗ HAPUS kolom yang tidak ada, hanya update yang pasti ada
 $updateQuery = "UPDATE surat_keluar 
-                SET file_surat = ?, status_proses = 'selesai', ttd_oleh = ?, ttd_pada = NOW() 
+                SET file_surat = ?, status_proses = 'selesai'
                 WHERE id_surat = ?";
 $stmtUpdate = $conn->prepare($updateQuery);
-$stmtUpdate->bind_param("ssi", $namaFileBaru, $ttdOleh, $id_surat);
+$stmtUpdate->bind_param("si", $namaFileBaru, $id_surat);
 $stmtUpdate->execute();
 $stmtUpdate->close();
 
