@@ -10,12 +10,16 @@ if ($id <= 0) {
     exit();
 }
 
-// 2. Proteksi Hak Akses Berdasarkan Role Session
-$user_role = strtolower($_SESSION['tipe_akses'] ?? ''); 
-$akses_diizinkan = ['superadmin', 'kakesdam_jaya', 'wakakesdam_jaya'];
+// 2. ✅ Proteksi Hak Akses untuk 3 Pengguna Berwenang
+$user_email = $_SESSION['email'] ?? ''; 
+$akses_diizinkan = [
+    'kakesdamjaya2026@gmail.com',
+    'wakakesdamjaya2026@gmail.com',
+    'kasituud2026@gmail.com'
+];
 
-if (!in_array($user_role, $akses_diizinkan)) {
-    echo "<script>alert('Anda tidak memiliki otoritas (Akses Ditolak) untuk menandatangani surat ini!'); window.location.href='../transaksi/kelola_surat_keluar.php';</script>";
+if (!in_array($user_email, $akses_diizinkan)) {
+    echo "<script>alert('Anda tidak memiliki otoritas untuk menandatangani surat ini!'); window.location.href='../transaksi/kelola_surat_keluar.php';</script>";
     exit();
 }
 
@@ -36,20 +40,22 @@ if (!$resultSurat) {
 $status_proses = trim(strtolower($resultSurat['status_proses'] ?? ''));
 $is_ttd        = ($status_proses === 'selesai') ? true : false;
 
-// Ambil data email dari session
-$user_email = $_SESSION['email'] ?? ''; 
-
-// Logika penentuan label, gambar, dan text badge berdasarkan email yang login
+// ✅ Logika penentuan label berdasarkan email login
 if ($user_email === 'wakakesdamjaya2026@gmail.com') {
-    $label_title = "TTD Asli Wakakesdam Jaya (Preview)";
-    $label_desc  = "Preview tanda tangan resmi Wakakesdam.";
+    $label_title = "TTD Asli Wakakesdam Jaya";
+    $label_desc  = "Tanda tangan resmi Wakil Komandan";
     $img_preview = "../assets/ttd_wakakesdam_asli.png"; 
-    $text_badge  = "Penempatan TTD Wakakesdam";
+    $text_badge  = "Posisi TTD Wakakesdam";
+} elseif ($user_email === 'kasituud2026@gmail.com') {
+    $label_title = "TTD Asli Kasituud";
+    $label_desc  = "Tanda tangan resmi Kepala Staf Umum";
+    $img_preview = "../assets/ttd_kasituud_asli.png"; 
+    $text_badge  = "Posisi TTD Kasituud";
 } else {
-    $label_title = "TTD Asli Kakesdam Jaya (Preview)";
-    $label_desc  = "Preview tanda tangan resmi Komando.";
+    $label_title = "TTD Asli Kakesdam Jaya";
+    $label_desc  = "Tanda tangan resmi Komandan Kesdam";
     $img_preview = "../assets/ttd_kakesdam_asli.png";
-    $text_badge  = "Penempatan TTD Kakesdam";
+    $text_badge  = "Posisi TTD Kakesdam";
 }
 
 $nama_file     = $resultSurat['file_surat'] ?? '';
@@ -161,7 +167,7 @@ if (!empty($nama_file)) {
         display: none;
     }
     #drag-stempel::after {
-        content: "Stempel Kakesdam";
+        content: "Stempel Resmi";
         position: absolute;
         top: -22px;
         left: 0;
@@ -190,7 +196,7 @@ if (!empty($nama_file)) {
         display: none;
     }
     #drag-qr::after {
-        content: "QR Code";
+        content: "QR Verifikasi";
         position: absolute;
         top: -22px;
         left: 0;
@@ -219,9 +225,9 @@ if (!empty($nama_file)) {
     <div>
         <h4 class="fw-bold mb-1">
             <i class="bi bi-vector-pen text-success me-2"></i>
-            Tanda Tangan Surat Digital (Otoritas Kakesdam)
+            Tanda Tangan Surat Digital
         </h4>
-        <small class="text-muted">Mode Surat Keluar: Geser komponen ke posisi penandatanganan dokumen resmi</small>
+        <small class="text-muted">Geser komponen ke posisi yang tepat di dokumen</small>
     </div>
     <a href="../transaksi/kelola_surat_keluar.php" class="btn btn-secondary shadow-sm">
         <i class="bi bi-arrow-left"></i> Kembali
@@ -256,7 +262,7 @@ if (!empty($nama_file)) {
                     <div class="d-flex flex-column justify-content-center align-items-center text-center p-5" style="height:60vh;">
                         <i class="bi bi-file-earmark-x text-danger" style="font-size:90px;"></i>
                         <h4 class="fw-bold text-danger mt-4">File PDF Tidak Ditemukan</h4>
-                        <small class="text-muted">Pastikan draf dokumen fisik sudah diupload di folder uploads/surat_keluar/</small>
+                        <small class="text-muted">Pastikan file sudah diupload di folder surat_keluar</small>
                     </div>
                 <?php endif; ?>
             </div>
@@ -268,9 +274,9 @@ if (!empty($nama_file)) {
             <div class="card-header bg-white border-bottom">
                 <div class="d-flex justify-content-between align-items-center">
                     <h6 class="fw-bold mb-0">
-                        <i class="bi bi-pen-fill text-success me-2"></i> Ruang Panel Tanda Tangan
+                        <i class="bi bi-pen-fill text-success me-2"></i> Panel Tanda Tangan
                     </h6>
-                    <?= $is_ttd ? '<span class="badge bg-success signature-status"><i class="bi bi-patch-check-fill"></i> SUDAH TTD</span>' : '<span class="badge bg-warning text-dark signature-status"><i class="bi bi-clock-history"></i> BELUM TTD</span>' ?>
+                    <?= $is_ttd ? '<span class="badge bg-success"><i class="bi bi-patch-check-fill"></i> SUDAH TTD</span>' : '<span class="badge bg-warning text-dark"><i class="bi bi-clock-history"></i> BELUM TTD</span>' ?>
                 </div>
             </div>
             <div class="card-body">
@@ -280,7 +286,7 @@ if (!empty($nama_file)) {
                             <i class="bi bi-check-circle-fill fs-3 me-2"></i>
                             <div>
                                 <div class="fw-bold">Dokumen Sudah Ditandatangani</div>
-                                <small>Tanda tangan resmi Kakesdam telah diterapkan di dokumen surat keluar ini.</small>
+                                <small>Anda dapat melihat atau mengulang tanda tangan.</small>
                             </div>
                         </div>
                     </div>
@@ -288,7 +294,7 @@ if (!empty($nama_file)) {
                         <a href="<?= htmlspecialchars($pdf_preview) ?>" target="_blank" class="btn btn-success">
                             <i class="bi bi-eye-fill me-1"></i> Lihat Hasil PDF
                         </a>
-                        <a href="hapus_ttd_aksi.php?id=<?= $id ?>&jenis=keluar" class="btn btn-outline-danger" onclick="return confirm('Hapus tanda tangan ini dan ulangi?')">
+                        <a href="hapus_ttd_aksi.php?id=<?= $id ?>&jenis=keluar" class="btn btn-outline-danger" onclick="return confirm('Hapus tanda tangan dan ulangi proses?')">
                             <i class="bi bi-arrow-repeat me-1"></i> Tanda Tangan Ulang
                         </a>
                     </div>
@@ -327,17 +333,17 @@ if (!empty($nama_file)) {
                                 <i class="bi bi-trash"></i> Bersihkan Coretan
                             </button>
                             <button type="button" class="btn btn-warning btn-sm fw-bold text-dark" id="lock-pad-to-screen">
-                                <i class="bi bi-patch-check"></i> 1. Kunci & Tampilkan di Dokumen
+                                <i class="bi bi-patch-check"></i> 1. Tampilkan di Dokumen
                             </button>
                         </div>
 
                         <div class="alert alert-info small py-2 mb-3">
-                            <i class="bi bi-info-circle-fill"></i> Langkah: Coret TTD &rarr; Klik tombol kuning &rarr; Geser komponen pada PDF di kiri &rarr; Klik Simpan.
+                            <i class="bi bi-info-circle-fill"></i> Langkah: Tulis TTD &rarr; Klik Tombol Kuning &rarr; Geser Posisi &rarr; Simpan.
                         </div>
 
                         <button type="submit" class="btn btn-success w-100 fw-bold py-2 shadow-sm" id="btnSubmit" disabled>
-                            <span class="normal-text"><i class="bi bi-save2-fill me-1"></i> 2. Simpan & Terapkan Dokumen</span>
-                            <span class="loading-spinner"><span class="spinner-border spinner-border-sm me-2"></span>Menyimpan Data...</span>
+                            <span class="normal-text"><i class="bi bi-save2-fill me-1"></i> 2. Simpan & Terapkan</span>
+                            <span class="loading-spinner"><span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...</span>
                         </button>
                     </form>
                 <?php endif; ?>
@@ -356,7 +362,6 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 const canvasPad = document.getElementById('signature-pad');
 let signaturePad;
 
-// Objek penyimpan koordinat default asli bawaan user
 let defaultPositions = { ttd: {x:0, y:0}, stempel: {x:0, y:0}, qr: {x:0, y:0} };
 
 if (canvasPad) {
@@ -389,7 +394,7 @@ if (canvasPad) {
 
     document.getElementById('lock-pad-to-screen').addEventListener('click', function() {
         if (signaturePad.isEmpty()) {
-            alert('Silakan coret tanda tangan terlebih dahulu!');
+            alert('Silakan tulis tanda tangan terlebih dahulu!');
             return false;
         }
 
@@ -410,7 +415,6 @@ if (canvasPad) {
 
             document.getElementById('btnSubmit').disabled = false;
 
-            // Eksekusi penempatan koordinat asli di bawah dekat TTD halaman terakhir
             initPosition('drag-ttd', defaultPositions.ttd.x, defaultPositions.ttd.y);
             initPosition('drag-stempel', defaultPositions.stempel.x, defaultPositions.stempel.y);
             initPosition('drag-qr', defaultPositions.qr.x, defaultPositions.qr.y);
@@ -418,16 +422,13 @@ if (canvasPad) {
     });
 }
 
-/* RENDER ENGINE PDF.JS UNTUK AREA INTERAKTIF DRAG */
 const pdfUrl = <?= json_encode($pdf_preview) ?>;
 
 if (pdfUrl && pdfUrl.trim() !== '') {
-    pdfjsLib.getDocument({
-        url: pdfUrl
-    }).promise
+    pdfjsLib.getDocument({ url: pdfUrl }).promise
     .then(function(pdf) {
         const lastPage = pdf.numPages;
-        document.getElementById('page-info').textContent = "Halaman Terakhir: " + lastPage + " dari " + lastPage;
+        document.getElementById('page-info').textContent = "Halaman Terakhir: " + lastPage;
         return pdf.getPage(lastPage);
     })
     .then(function(page) {
@@ -445,33 +446,22 @@ if (pdfUrl && pdfUrl.trim() !== '') {
         container.style.width = viewport.width + 'px';
         container.style.height = viewport.height + 'px';
 
-        const canvasWidthInput = document.getElementById('canvas_width');
-        const canvasHeightInput = document.getElementById('canvas_height');
+        document.getElementById('canvas_width').value = viewport.width;
+        document.getElementById('canvas_height').value = viewport.height;
 
-        if (canvasWidthInput) canvasWidthInput.value = viewport.width;
-        if (canvasHeightInput) canvasHeightInput.value = viewport.height;
-
-        // Hitung rumus koordinat asli bawaan user tepat setelah kontainer PDF siap dideteksi tingginya
+        // Posisi default komponen
         defaultPositions.ttd = { x: container.clientWidth / 2 - 40, y: container.clientHeight - 180 };
         defaultPositions.stempel = { x: container.clientWidth / 2 - 120, y: container.clientHeight - 200 };
         defaultPositions.qr = { x: container.clientWidth / 2 - 140, y: container.clientHeight - 160 };
 
-        return page.render({
-            canvasContext: context,
-            viewport: viewport
-        }).promise;
-    })
-    .then(function() {
-        console.log('PDF berhasil dirender');
+        return page.render({ canvasContext: context, viewport: viewport }).promise;
     })
     .catch(function(error) {
         console.error('Gagal render PDF:', error);
-        document.getElementById('page-info').textContent = 'Gagal memuat PDF';
-        alert('PDF gagal dimuat: ' + error.message);
+        alert('Gagal memuat dokumen PDF!');
     });
 }
 
-/* CORE ENGINE: LOGIKA DRAG & DROP KOMPONEN */
 function initPosition(elementId, x, y) {
     const el = document.getElementById(elementId);
     el.style.left = x + 'px';
@@ -489,10 +479,8 @@ function makeElementDraggable(elementId) {
     function dragMouseDown(e) {
         e = e || window.event;
         if (e.type !== 'touchstart') e.preventDefault();
-
         pos3 = (e.type === 'touchstart') ? e.touches[0].clientX : e.clientX;
         pos4 = (e.type === 'touchstart') ? e.touches[0].clientY : e.clientY;
-
         document.onmouseup = closeDragElement;
         document.ontouchend = closeDragElement;
         document.onmousemove = elementDrag;
@@ -511,24 +499,19 @@ function makeElementDraggable(elementId) {
 
         let newX = el.offsetLeft - pos1;
         let newY = el.offsetTop - pos2;
-
         const container = document.getElementById('pdf-container');
-        if (newX < 0) newX = 0;
-        if (newY < 0) newY = 0;
-        if (newX + el.offsetWidth > container.clientWidth) newX = container.clientWidth - el.offsetWidth;
-        if (newY + el.offsetHeight > container.clientHeight) newY = container.clientHeight - el.offsetHeight;
+
+        newX = Math.max(0, Math.min(newX, container.clientWidth - el.offsetWidth));
+        newY = Math.max(0, Math.min(newY, container.clientHeight - el.offsetHeight));
 
         el.style.left = newX + "px";
         el.style.top = newY + "px";
-
         updateCoordinateInputs(elementId, newX, newY);
     }
 
     function closeDragElement() {
-        document.onmouseup = null;
-        document.onmousemove = null;
-        document.ontouchend = null;
-        document.ontouchmove = null;
+        document.onmouseup = document.onmousemove = null;
+        document.ontouchend = document.ontouchmove = null;
     }
 }
 
@@ -549,7 +532,6 @@ makeElementDraggable('drag-ttd');
 makeElementDraggable('drag-stempel');
 makeElementDraggable('drag-qr');
 
-/* SUBMIT INTERCEPTOR FORM */
 document.getElementById('formTTD').addEventListener('submit', function(e) {
     document.getElementById('signature_data').value = signaturePad.toDataURL('image/png');
     const btn = document.getElementById('btnSubmit');

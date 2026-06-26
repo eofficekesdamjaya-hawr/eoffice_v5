@@ -19,11 +19,16 @@ if ($id_surat <= 0 || $jenis_tabel !== 'keluar') {
     exit;
 }
 
-// Proteksi Hak Akses
-$user_role = strtolower($_SESSION['tipe_akses'] ?? '');
-$akses_diizinkan = ['superadmin', 'kakesdam_jaya', 'wakakesdam_jaya'];
-if (!in_array($user_role, $akses_diizinkan)) {
-    echo "<script>alert('Akses ditolak!'); window.history.back();</script>";
+// ✅ Akses untuk 3 pengguna yang berwenang
+$user_email = $_SESSION['email'] ?? '';
+$akses_diizinkan = [
+    'kakesdamjaya2026@gmail.com',
+    'wakakesdamjaya2026@gmail.com',
+    'kasituud2026@gmail.com'
+];
+
+if (!in_array($user_email, $akses_diizinkan)) {
+    echo "<script>alert('Anda tidak memiliki otoritas untuk menandatangani!'); window.history.back();</script>";
     exit;
 }
 
@@ -75,37 +80,37 @@ $namaFileBaru = $infoFile['filename'] . "_ttd.pdf";
 $pathHasil = $folderUpload . $namaFileBaru;
 
 // --------------------------
-// 4. Inisialisasi FPDI - Jalur SESUAI dengan server Anda
+// 4. INISIALISASI FPDI TANPA NAMESPACE (Solusi Error Utama)
 // --------------------------
-// Berdasarkan hasil find: ./libraries/fpdf/Fpdi.php ada
-require_once "../libraries/fpdf/Fpdi.php";
+// Gunakan jalur ini yang sudah teruji kompatibel
+set_include_path(get_include_path() . PATH_SEPARATOR . realpath("../libraries/"));
 
-// Cek apakah class tersedia
-if (!class_exists('FPDI') && !class_exists('Fpdi')) {
-    echo "<script>alert('Library FPDI tidak dapat dimuat!');</script>";
+// Muat file FPDI versi lama
+require_once "../libraries/fpdf.php";
+require_once "../libraries/fpdi.php";
+
+if (!class_exists('FPDI')) {
+    echo "<script>alert('Library PDF tidak ditemukan! Hubungi admin.'); window.history.back();</script>";
     exit;
 }
 
-// Gunakan class yang tersedia
-$pdf = class_exists('FPDI') ? new FPDI() : new Fpdi();
+$pdf = new FPDI();
 
-// Ambil jumlah halaman
+// Ambil halaman terakhir
 $jumlahHalaman = $pdf->setSourceFile($pathAsli);
 if ($jumlahHalaman < 1) {
     echo "<script>alert('File PDF kosong atau rusak!'); window.history.back();</script>";
     exit;
 }
 
-// Ambil halaman terakhir saja
 $nomorHalaman = $jumlahHalaman;
 $templateId = $pdf->importPage($nomorHalaman);
 $ukuranHalaman = $pdf->getTemplateSize($templateId);
 
-// Tambah halaman sesuai ukuran asli
 $pdf->AddPage($ukuranHalaman['orientation'], [$ukuranHalaman['width'], $ukuranHalaman['height']]);
 $pdf->useTemplate($templateId);
 
-// Hitung skala konversi posisi layar ke ukuran asli PDF
+// Hitung skala konversi posisi
 $skala = $ukuranHalaman['width'] / $canvasW;
 
 // --------------------------
@@ -115,7 +120,7 @@ $folderSementara = "../uploads/sementara/";
 if (!file_exists($folderSementara)) mkdir($folderSementara, 0755, true);
 $fileTtd = $folderSementara . "ttd_" . time() . ".png";
 
-// Simpan tanda tangan dari base64
+// Simpan tanda tangan
 $ttdData = explode(',', $signatureData)[1];
 file_put_contents($fileTtd, base64_decode($ttdData));
 
@@ -140,32 +145,33 @@ if (file_exists($fileQr)) {
 }
 
 // --------------------------
-// 6. Simpan & Bersihkan
+// 6. Simpan & Update Database
 // --------------------------
 $pdf->Output('F', $pathHasil);
 @unlink($fileTtd);
 
-// --------------------------
-// 7. Update Database
-// --------------------------
+// Tentukan nama penandatangan
+if ($user_email === 'kakesdamjaya2026@gmail.com') {
+    $ttdOleh = "Komandan Kesdam Jaya";
+} elseif ($user_email === 'wakakesdamjaya2026@gmail.com') {
+    $ttdOleh = "Wakil Komandan Kesdam Jaya";
+} else {
+    $ttdOleh = "Kepala Staf Umum";
+}
+
 $updateQuery = "UPDATE surat_keluar 
                 SET file_surat = ?, status_proses = 'selesai', ttd_oleh = ?, ttd_pada = NOW() 
                 WHERE id_surat = ?";
 $stmtUpdate = $conn->prepare($updateQuery);
-
-$ttdOleh = ($_SESSION['email'] === 'wakakesdamjaya2026@gmail.com') 
-    ? "Wakil Komandan Kesdam Jaya" 
-    : "Komandan Kesdam Jaya";
-
 $stmtUpdate->bind_param("ssi", $namaFileBaru, $ttdOleh, $id_surat);
 $stmtUpdate->execute();
 $stmtUpdate->close();
 
 // --------------------------
-// 8. Selesai
+// 7. Selesai
 // --------------------------
 echo "<script>
-    alert('Tanda tangan berhasil diterapkan!');
+    alert('✅ Tanda tangan berhasil diterapkan!');
     window.location.href = '../transaksi/kelola_surat_keluar.php';
 </script>";
 exit;
