@@ -32,32 +32,38 @@ if ($filter === 'disposisi') {
     $additional_query = " AND status_proses = 'Selesai'";
 }
 
-// 2. Tentukan batasan hak akses berdasarkan Peran & Email Resmi
+// 2. Tentukan batasan hak akses (Scope Privileges)
 $email_pimpinan_resmi = ['kakesdamjaya2026@gmail.com', 'wakakesdamjaya2026@gmail.com', 'kasituud2026@gmail.com', 'setum@gmail.com'];
+$email_admin_resmi    = ['superadmin@gmail.com', 'admin@gmail.com', 'setum@gmail.com'];
 
-// Kategori A: Setum & Pimpinan (Akses Global)
-if ($user_role === 'setum' || $user_role === 'pimpinan' || in_array($user_email, $email_pimpinan_resmi)) {
-    
-    // ATURAN GLOBAL KESDAM: Surat 'Selesai' (Sudah TTD) HARUS selalu terlihat di halaman utama tanpa filter
+// Kategori A: Administrator, Setum & Pimpinan (Bypass total, Akses Lintas-Ruangan Global)
+if (
+    in_array($user_role, ['superadmin', 'admin', 'setum', 'pimpinan']) || 
+    in_array($user_email, $email_pimpinan_resmi) || 
+    in_array($user_email, $email_admin_resmi)
+) {
+    // Tampilkan berkas yang butuh tindakan segera (Disposisi/Pending) + Selesai di halaman utama
     if (empty($filter)) {
         $additional_query .= " AND (status_proses = 'Proses Disposisi' OR status_proses = 'Pending' OR status_proses = 'Selesai')";
     }
-    // Bypass total restriction 'created_by' agar kiriman disposisi pimpinan saling terlihat satu sama lain
+    // Tanpa batasan 'created_by' agar kiriman antar-pimpinan/setum/admin bisa saling terlihat secara global
 } 
 
-// Kategori B: Ruangan Biasa (Proteksi Ketat Data Internal)
+// Kategori B: Ruangan Biasa (Proteksi Ketat Data Internal Ruangan)
 elseif ($user_role === 'ruangan') {
     $safe_creator = mysqli_real_escape_string($conn, $id_user);
     
-    // Jika filter mencari yang SUDAH TTD, bypass batasan creator agar bisa diunduh/diarsipkan secara global oleh ruangan
+    // Jika filter mencari yang SUDAH TTD, bypass batasan creator agar bisa diunduh/diarsipkan secara global
     if ($filter === 'sudah_ttd') {
-        // Biarkan kosong agar seluruh berkas berstatus 'Selesai' di sistem dapat diakses untuk arsip
+        // Dibiarkan kosong agar klausa 'status_proses = 'Selesai'' di atas berjalan global
     } 
-    // Jika di dashboard utama (tanpa filter) atau filter lainnya, batasi data milik sendiri + berkas Selesai global
+    // Jika membuka halaman utama tanpa filter atau menggunakan filter disposisi/belum_ttd
     else {
         if (empty($filter)) {
+            // Halaman utama ruangan menampilkan milik sendiri + semua surat yang sudah selesai secara global
             $additional_query .= " AND (created_by = '$safe_creator' OR status_proses = 'Selesai')";
         } else {
+            // Jika filter aktif, kunci hanya milik ruangan sendiri
             $additional_query .= " AND created_by = '$safe_creator'";
         }
     }
