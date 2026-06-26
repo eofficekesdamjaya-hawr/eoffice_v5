@@ -1,3 +1,4 @@
+
 <?php
 
 require_once __DIR__.'/../config/session.php';
@@ -5,12 +6,9 @@ require_once "../config/koneksi.php";
 require_once "../config/auth_config.php";
 require_once "../config/hak_akses.php";  
 
-// SINKRONISASI DENGAN STRUKTUR SESSION ANDA
 $id_user     = $_SESSION['id_user'] ?? '';
 $nama_user   = $_SESSION['nama_user'] ?? 'Personel Ruangan';
 $tipe_akses  = $_SESSION['tipe_akses'] ?? '';
-
-// Menentukan user_role untuk kebutuhan filter (diambil dari tipe_akses session)
 $user_role   = $tipe_akses;
 $user_email  = $_SESSION['email'] ?? ''; 
 
@@ -20,10 +18,11 @@ $ruanganMap = [
     7 => 'Seksi Matkes', 8 => 'Seksi Yankes', 9 => 'Gudang Kesrah', 10 => 'SMK Kesdam Jaya'
 ];
 
-$filter = $_GET['filter'] ?? '';
+// Normalisasi filter: jika kosong atau hanya spasi, anggap null/all data
+$filter = isset($_GET['filter']) ? trim($_GET['filter']) : '';
 $additional_query = "";
 
-// 1. Tentukan kondisi dasar berdasarkan filter status_proses (Perbaikan Syntax)
+// 1. Standarisasi Filter Global (Hanya menyaring jika filter eksplisit dipilih)
 if ($filter === 'disposisi') {
     $additional_query = " AND (status_proses = 'Proses Disposisi' OR status_proses = 'Pending')";
 } elseif ($filter === 'belum_ttd') {
@@ -32,31 +31,30 @@ if ($filter === 'disposisi') {
     $additional_query = " AND status_proses = 'Selesai'";
 }
 
-// 2. Tentukan batasan hak akses (Scope Privileges)
+// 2. Definisikan Hak Akses Hierarki Tertinggi Kesdam
 $email_pimpinan_resmi = ['kakesdamjaya2026@gmail.com', 'wakakesdamjaya2026@gmail.com', 'kasituud2026@gmail.com', 'setum@gmail.com'];
 $email_admin_resmi    = ['superadmin@gmail.com', 'admin@gmail.com'];
 
-// Kategori A: Panglima Data (Superadmin, Admin, Setum, Pimpinan) -> Akses Lintas-Ruangan Global
-if (
-    in_array($user_role, ['superadmin', 'admin', 'setum', 'pimpinan']) || 
-    in_array($user_email, $email_pimpinan_resmi) || 
-    in_array($user_email, $email_admin_resmi)
-) {
-    // Jika dashboard diakses tanpa klik filter, tampilkan semua surat masuk/proses secara global
-    if (empty($filter)) {
-        $additional_query .= " AND (status_proses = 'Proses Disposisi' OR status_proses = 'Pending' OR status_proses = 'Selesai' OR status_proses = 'Di terima')";
-    }
-    // Tanpa batasan created_by agar semua email pimpinan, admin, dan setum bisa saling melihat data
-} 
+// Pengecekan Kategori A (Superadmin, Admin, Setum, Pimpinan)
+$is_elevated_user = in_array($user_role, ['superadmin', 'admin', 'setum', 'pimpinan']) || 
+                    in_array($user_email, $email_pimpinan_resmi) || 
+                    in_array($user_email, $email_admin_resmi);
 
-// Kategori B: Ruangan Biasa (Proteksi Data Internal)
+if ($is_elevated_user) {
+    // BYPASS TOTAL: Jika membuka halaman utama (?filter=), jangan batasi status_proses apa pun.
+    // Ini membuka isolasi sehingga kiriman dari siapapun ke siapapun dalam jajaran inti langsung muncul.
+    if ($filter === '') {
+        $additional_query .= ""; 
+    }
+} 
+// Kategori B: Ruangan Biasa (Kunci Hak Akses Internal)
 elseif ($user_role === 'ruangan') {
     $safe_creator = mysqli_real_escape_string($conn, $id_user);
     
     if ($filter === 'sudah_ttd') {
-        // No restriction agar ruangan bisa melihat arsip selesai secara global
+        // No restriction (Akses arsip global)
     } else {
-        if (empty($filter)) {
+        if ($filter === '') {
             $additional_query .= " AND (created_by = '$safe_creator' OR status_proses = 'Selesai')";
         } else {
             $additional_query .= " AND created_by = '$safe_creator'";
