@@ -173,29 +173,35 @@ if (file_exists($fileQr)) {
 // --------------------------
 // 8. Simpan & Update DB
 // --------------------------
+// --------------------------
+// 8. Simpan & Update DB
+// --------------------------
 $pdf->Output('F', $pathHasil);
 @unlink($fileTtd);
 
-// Tentukan nama penandatangan
+// Tentukan nama penandatangan berdasarkan email resmi
 if ($user_email === 'kakesdamjaya2026@gmail.com') {
     $nama_penandatangan = "Komandan Kesdam Jaya";
 } elseif ($user_email === 'wakakesdamjaya2026@gmail.com') {
     $nama_penandatangan = "Wakil Komandan Kesdam Jaya";
+} elseif ($user_email === 'kasituud2026@gmail.com') {
+    $nama_penandatangan = "Kasituud Kesdam Jaya"; // ✅ Diubah dari Kepala Staf Umum
 } else {
-    $nama_penandatangan = "Kepala Staf Umum";
+    $nama_penandatangan = "Pejabat Tidak Dikenal"; // Fallback aman jika ada user lain tembus bypass
 }
 
-// Update sesuai kolom tabel yang ada
+// Update database dengan kolom ttd_oleh yang bersih
 $updateQuery = "UPDATE surat_keluar 
                 SET file_surat = ?, 
                     status_tte = 'Selesai', 
                     penandatangan = ?, 
+                    ttd_oleh = ?, 
                     tgl_tte = NOW(), 
                     status_proses = 'Selesai' 
                 WHERE id_surat = ?";
 
 $stmtUpdate = $conn->prepare($updateQuery);
-$stmtUpdate->bind_param("ssi", $namaFileBaru, $nama_penandatangan, $id_surat);
+$stmtUpdate->bind_param("ssssi", $namaFileBaru, $nama_penandatangan, $user_email, $id_surat);
 $stmtUpdate->execute();
 $stmtUpdate->close();
 
