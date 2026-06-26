@@ -55,13 +55,15 @@ if ($filter === 'disposisi') {
 // PROTEKSI AKSES ABSOLUT DATA RUANGAN
 if ($is_ruangan && !in_array($user_email, $allowed_emails)) {
     $safe_role = mysqli_real_escape_string($conn, $role_ruangan);
+    // Tambah variasi role dengan underscore (misal 'kasi tuud' menjadi 'kasi_tuud')
+    $safe_role_underscore = str_replace(' ', '_', $safe_role); 
     $safe_uid  = mysqli_real_escape_string($conn, $id_user);
     
     $additional_query .= " AND (
-        LOWER(sm.tujuan_disposisi) = '$safe_role' 
-        OR LOWER(sm.tujuan_utama) = '$safe_role' 
-        OR LOWER(ds.ke) = '$safe_role'
-        OR FIND_IN_SET('$safe_role', ds.tembusan_kasi) > 0
+        LOWER(sm.tujuan_disposisi) = '$safe_role' OR LOWER(sm.tujuan_disposisi) = '$safe_role_underscore'
+        OR LOWER(sm.tujuan_utama) = '$safe_role' OR LOWER(sm.tujuan_utama) = '$safe_role_underscore'
+        OR LOWER(ds.ke) = '$safe_role' OR LOWER(ds.ke) = '$safe_role_underscore'
+        OR FIND_IN_SET('$safe_role', ds.tembusan_kasi) > 0 OR FIND_IN_SET('$safe_role_underscore', ds.tembusan_kasi) > 0
         OR sm.created_by = '$safe_uid'
     )";
 }
@@ -94,6 +96,8 @@ $resSebelumnya = mysqli_query($conn, $sqlSebelumnya);
 function renderBadgeAlurMasuk($status) {
     $status_clean = trim($status ?? '');
     switch ($status_clean) {
+        case 'Pending': return "<span class='badge bg-warning text-dark'><i class='bi bi-clock-history'></i> Menunggu Verifikasi</span>";
+        case 'Dalam Proses': return "<span class='badge bg-warning text-dark'><i class='bi bi-gear-spin fa-spin'></i> Dalam Proses</span>";
         case 'Diterima': return "<span class='badge bg-info text-white'><i class='bi bi-check-circle'></i> Diterima</span>";
         case 'Ditolak': return "<span class='badge bg-danger text-white'><i class='bi bi-x-circle'></i> Ditolak</span>";
         case 'Proses Disposisi': return "<span class='badge bg-primary text-white'><i class='bi bi-shuffle'></i> Proses Disposisi</span>";
