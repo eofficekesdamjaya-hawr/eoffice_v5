@@ -80,16 +80,20 @@ $namaFileBaru = $infoFile['filename'] . "_ttd.pdf";
 $pathHasil = $folderUpload . $namaFileBaru;
 
 // --------------------------
-// 4. ✅ MUAT LIBRARY DENGAN AUTLOAD (CARA BENAR)
+// 4. ✅ MUAT LIBRARY DENGAN URUTAN YANG BENAR
 // --------------------------
-// Gunakan autoload.php yang sudah tersedia di folder tersebut
+// Langkah 1: Muat FPDF terlebih dahulu (wajib ada sebelum FPDI)
+require_once "../libraries/fpdf/fpdf.php";
+
+// Langkah 2: Baru muat autoload FPDI
 require_once "../libraries/fpdf/autoload.php";
 
-// Gunakan class dengan namespace yang benar
+// Langkah 3: Gunakan namespace yang sesuai
 use setasign\Fpdi\Fpdi;
 
-if (!class_exists('setasign\Fpdi\Fpdi')) {
-    echo "<script>alert('Library PDF tidak dapat dimuat! Hubungi admin.'); window.history.back();</script>";
+// Cek apakah semua kelas sudah terbaca
+if (!class_exists('FPDF') || !class_exists('setasign\Fpdi\Fpdi')) {
+    echo "<script>alert('Gagal memuat library PDF. Hubungi admin.'); window.history.back();</script>";
     exit;
 }
 
