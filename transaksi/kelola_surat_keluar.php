@@ -285,16 +285,21 @@ function displayTableSurat($result, $user_role, $ruanganMap, $user_email) {
                                             <p class="mb-3">Tentukan status verifikasi draf surat dengan nomor agenda <strong><?= htmlspecialchars($row['no_agenda'] ?? '-') ?></strong>:</p>
                                             <div class="mb-3">
                                                 <label for="statusSelect<?= $row['id_surat'] ?>" class="form-label fw-bold text-secondary">Pilih Status Berkas:</label>
-                                                <select class="form-select" id="statusSelect<?= $row['id_surat'] ?>" name="status" required>
-                                                    <option value="" disabled selected>-- Pilih Status --</option>
-                                                    <option value="Di terima">✅ Diterima</option>
-                                                    <option value="Ditolak">❌ Ditolak</option>
-                                                    <option value="Proses Disposisi">📝 Proses Disposisi</option>
-                                                    <option value="Sudah Didisposisikan">📌 Sudah Didisposisikan</option>
-                                                    <option value="Dalam Proses">⚙️ Dalam Proses</option>
-                                                    <option value="Ditindaklanjuti">📤 Ditindaklanjuti/Dijawab</option>
-                                                    <option value="Selesai">📂 Selesai & Diarsipkan</option>
-                                                </select>
+            <select class="form-select" id="statusSelect<?= $row['id_surat'] ?>" name="status" required>
+    <option value="" disabled selected>-- Pilih Status --</option>
+    <option value="Di terima">✅ Diterima</option>
+    <option value="Ditolak">❌ Ditolak</option>
+    <option value="Proses Disposisi">📝 Proses Disposisi (Alur Utama)</option>
+    
+    <?php if (in_array($user_role, ['kakesdam_jaya', 'wakakesdam_jaya', 'superadmin'])): ?>
+        <option value="Potong Kompas Setum" class="fw-bold text-danger">⚡ Potong Kompas (Langsung ke Setum)</option>
+    <?php endif; ?>
+    
+    <option value="Sudah Didisposisikan">📌 Sudah Didisposisikan</option>
+    <option value="Dalam Proses">⚙️ Dalam Proses</option>
+    <option value="Ditindaklanjuti">📤 Ditindaklanjuti/Dijawab</option>
+    <option value="Selesai">📂 Selesai & Diarsipkan</option>
+</select>
                                             </div>
                                         </div>
                                         <div class="modal-footer">
